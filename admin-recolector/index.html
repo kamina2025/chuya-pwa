@@ -30,6 +30,7 @@
         <!-- Contenedor Principal de Secciones -->
         <main id="admin-main-content" class="container">
             <div data-component="components/sec-registrar-miembro.html"></div>
+            <div data-component="components/sec-usuarios.html"></div>
             <div data-component="components/sec-recompensar.html"></div>
             <div data-component="components/sec-ticket-generador.html"></div>
             <div data-component="components/sec-pedidos.html"></div>
@@ -61,7 +62,10 @@
                             console.log("[Chuya::AdminIndex] Service Worker operativo activo. Scope:", reg.scope);
                         })
                         .catch((err) => {
-                            console.warn("[Chuya::AdminIndex] Service Worker no registrado (verificar sw.js):", err.message);
+                            console.warn(
+                                "[Chuya::AdminIndex] Service Worker no registrado (verificar sw.js):",
+                                err.message
+                            );
                         });
                 }
             });

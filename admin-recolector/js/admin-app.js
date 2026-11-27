@@ -1,6 +1,7 @@
 /**
  * Chuya Admin - Script Principal de Orquestación
- * Sincroniza UI, pestañas, derivación/asignación PGP/Nano, QR, tickets térmicos y descifrado PII en memoria RAM
+ * Sincroniza UI, pestañas, directorio de miembros, derivación/asignación PGP/Nano,
+ * QR, tickets térmicos y descifrado PII en memoria RAM.
  * Stack: JS Vanilla ES6+
  */
 
@@ -51,9 +52,15 @@ window.addEventListener("online", async () => {
     try {
         if (typeof AdminAPIService?.sincronizarColaOffline === "function") {
             const res = await AdminAPIService.sincronizarColaOffline();
-            if (res && res.procesadas > 0) {
+            if (res?.procesadas > 0) {
                 AdminUI.mostrarToast(`☁️ ${res.procesadas} transacción(es) offline sincronizada(s) con éxito.`, "success");
                 await cargarDatosTablas();
+            }
+            if (res?.descartadas > 0) {
+                AdminUI.mostrarToast(
+                    `⚠️ ${res.descartadas} registro(s) en cola fueron rechazados por el servidor y purgados.`,
+                    "warning"
+                );
             }
         }
     } catch (err) {
@@ -103,7 +110,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             AdminUI.renderOperadorBadge("OPERADOR: ADMIN", activeOperator);
         }
 
-        // 5. Registrar listeners de eventos, formularios y pestañas
+        // 5. Registrar listeners de eventos, formularios, directorio de usuarios y pestañas
         setupFormularioRegistro();
         setupFormularioRecoleccion();
         setupEventosImpresion();
@@ -127,16 +134,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 /**
- * Escucha cambios de pestañas para actualizar tablas y vistas previas dinámicamente
+ * Escucha cambios de pestañas y controles de recarga manual para actualizar tablas dinámicamente
  */
 function setupNavegacionTablas() {
     document.querySelectorAll("[data-target]").forEach((btn) => {
+        if (btn.dataset.navDataBound === "true") return;
+
         btn.addEventListener("click", () => {
             const target = btn.getAttribute("data-target");
             console.log(`[Chuya::AdminApp] Navegación a sección: ${target}`);
 
             try {
-                if (target === "sec-pedidos" || target === "sec-inventario" || target === "sec-registrar-miembro") {
+                if (
+                    target === "sec-usuarios" ||
+                    target === "sec-pedidos" ||
+                    target === "sec-inventario" ||
+                    target === "sec-registrar-miembro"
+                ) {
                     cargarDatosTablas();
                 } else if (target === "sec-ticket-generador") {
                     if (typeof TicketGeneratorModule?.actualizarVistaPrevia === "function") {
@@ -147,7 +161,29 @@ function setupNavegacionTablas() {
                 console.error(`[Chuya::AdminApp] Error al actualizar vista '${target}':`, navErr);
             }
         });
+
+        btn.dataset.navDataBound = "true";
     });
+
+    // Botón de sincronización manual en la vista sec-usuarios.html
+    const btnRefrescarUsuarios = document.getElementById("btn-refrescar-usuarios");
+    if (btnRefrescarUsuarios && btnRefrescarUsuarios.dataset.bound !== "true") {
+        btnRefrescarUsuarios.addEventListener("click", async () => {
+            console.log("[Chuya::AdminApp] Sincronización manual de miembros solicitada.");
+            btnRefrescarUsuarios.disabled = true;
+            const textoOriginal = btnRefrescarUsuarios.textContent;
+            btnRefrescarUsuarios.textContent = "⏳ Sincronizando...";
+
+            try {
+                await cargarDatosTablas();
+                AdminUI.mostrarToast("👥 Directorio de miembros actualizado.", "success");
+            } finally {
+                btnRefrescarUsuarios.disabled = false;
+                btnRefrescarUsuarios.textContent = textoOriginal;
+            }
+        });
+        btnRefrescarUsuarios.dataset.bound = "true";
+    }
 }
 
 /**
@@ -320,7 +356,7 @@ function setupEventosImpresion() {
 }
 
 /**
- * Consulta la API Backend en paralelo (Usuarios, Pedidos, Inventario) y descifra la PII en RAM
+ * Consulta la API Backend en paralelo (Usuarios, Pedidos, Inventario) y actualiza todas las vistas
  */
 let isFetchingData = false;
 
@@ -360,14 +396,19 @@ async function cargarDatosTablas() {
             inventario: inventario.length
         });
 
-        if (typeof AdminUI?.renderUsuariosTable === "function") {
-            await AdminUI.renderUsuariosTable(usuarios);
+        // 1. Renderizar directorio de miembros registrados (sec-usuarios.html)
+        if (typeof AdminUI?.renderTablaUsuarios === "function") {
+            AdminUI.renderTablaUsuarios(usuarios);
+        } else if (typeof AdminUI?.renderUsuariosTable === "function") {
+            AdminUI.renderUsuariosTable(usuarios);
         }
 
+        // 2. Renderizar tabla de pedidos con descifrado PII en RAM
         if (typeof AdminUI?.renderPedidosTable === "function") {
             await AdminUI.renderPedidosTable(pedidos, usuarios);
         }
 
+        // 3. Renderizar inventario de productos
         if (typeof AdminUI?.renderInventarioTable === "function") {
             AdminUI.renderInventarioTable(inventario);
         }

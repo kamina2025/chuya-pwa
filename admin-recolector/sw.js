@@ -19,6 +19,7 @@ const PRECACHE_ASSETS = [
     "./components/header.html",
     "./components/sidebar.html",
     "./components/sec-registrar-miembro.html",
+    "./components/sec-usuarios.html.html",
     "./components/sec-recompensar.html",
     "./components/sec-ticket-generador.html",
     "./components/sec-pedidos.html",

@@ -7,7 +7,7 @@
  */
 
 const RAW_API_URL =
-    "https://script.google.com/macros/s/AKfycbybDwZJ6FcLI44OqqRl1a45L2obasVRT2G4QeaElZVHMWPzytfF91HjFhfmzwl8civsGA/exec".trim();
+    "https://script.google.com/macros/s/AKfycbwn4fM5DJUJoL7LlbyKtqL4vr21lZC6rjk9DWy5V1yP2W0t-p-WbTDtiPe1Csw5PvmKgA/exec".trim();
 
 const RAW_OPERATOR_ADDRESS =
     "nano_3admin1111111111111111111111111111111111111111111111111111111".trim().toLowerCase();

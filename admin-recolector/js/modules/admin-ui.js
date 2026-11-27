@@ -2,7 +2,7 @@
  * Chuya Admin - Módulo de Interfaz de Usuario y Renderizado (UI)
  * Stack: JS Vanilla ES6+
  * Descripción: Controla navegación por pestañas, menú lateral (Sidebar),
- * descifrado local PII en memoria RAM, renderizado de tablas dinámicas,
+ * descifrado local PII en memoria RAM, renderizado y filtrado de tablas dinámicas,
  * notificaciones toast y generación de tarjetas QR PGP.
  */
 
@@ -10,6 +10,8 @@ import { CryptoUtils } from "../../../js/modules/crypto-utils.js";
 import { ADMIN_CONFIG } from "../admin-config.js";
 
 export const AdminUI = {
+    _usuariosCache: [],
+
     /**
      * Inicializa los controladores de interfaz, navegación por pestañas, sidebar y delegación de eventos
      */
@@ -19,6 +21,7 @@ export const AdminUI = {
         this._setupTabNavigation();
         this._setupSidebarEvents();
         this._setupPedidosTableEvents();
+        this._setupUsuariosFilterEvents();
         console.log("[Chuya::AdminUI] Interfaz inicializada correctamente.");
     },
 
@@ -54,6 +57,8 @@ export const AdminUI = {
         const selectedTab = document.getElementById(targetId);
         if (selectedTab) {
             selectedTab.classList.add("active");
+        } else {
+            console.warn(`[Chuya::AdminUI] No se encontró la sección #${targetId} en el DOM.`);
         }
 
         const navElements = document.querySelectorAll("[data-target]");
@@ -85,15 +90,42 @@ export const AdminUI = {
     abrirSidebar() {
         const sidebar = document.getElementById("sidebar");
         const overlay = document.getElementById("sidebar-overlay");
-        if (sidebar) sidebar.classList.add("active");
-        if (overlay) overlay.classList.add("active");
+        const btnToggle = document.getElementById("btn-toggle-sidebar");
+
+        if (sidebar) {
+            sidebar.classList.add("active");
+            sidebar.setAttribute("aria-hidden", "false");
+        }
+        if (overlay) {
+            overlay.classList.add("active");
+            overlay.setAttribute("aria-hidden", "false");
+        }
+        if (btnToggle) {
+            btnToggle.setAttribute("aria-expanded", "true");
+        }
+        console.log("[Chuya::AdminUI] Menú lateral desplegado.");
     },
 
     cerrarSidebar() {
         const sidebar = document.getElementById("sidebar");
         const overlay = document.getElementById("sidebar-overlay");
-        if (sidebar) sidebar.classList.remove("active");
-        if (overlay) overlay.classList.remove("active");
+        const btnToggle = document.getElementById("btn-toggle-sidebar");
+
+        if (sidebar && document.activeElement && sidebar.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
+
+        if (sidebar) {
+            sidebar.classList.remove("active");
+            sidebar.setAttribute("aria-hidden", "true");
+        }
+        if (overlay) {
+            overlay.classList.remove("active");
+            overlay.setAttribute("aria-hidden", "true");
+        }
+        if (btnToggle) {
+            btnToggle.setAttribute("aria-expanded", "false");
+        }
     },
 
     /**
@@ -190,6 +222,145 @@ export const AdminUI = {
     },
 
     /**
+     * Alias retrocompatible hacia renderTablaUsuarios()
+     * @param {Array<Object>} usuarios
+     */
+    renderUsuariosTable(usuarios = []) {
+        this.renderTablaUsuarios(usuarios);
+    },
+
+    /**
+     * Almacena los miembros en RAM, vincula los filtros de sec-usuarios.html y renderiza la tabla
+     * @param {Array<Object>} usuarios - Lista de usuarios registrados de Google Sheets
+     */
+    renderTablaUsuarios(usuarios = []) {
+        this._usuariosCache = Array.isArray(usuarios) ? usuarios : [];
+        console.log(`[Chuya::AdminUI] Sincronizando caché RAM de usuarios (${this._usuariosCache.length} registros).`);
+
+        this._setupUsuariosFilterEvents();
+        this._aplicarFiltrosUsuarios();
+    },
+
+    /**
+     * Vincula eventos de búsqueda y filtro por rol en sec-usuarios.html sin duplicar listeners
+     * @private
+     */
+    _setupUsuariosFilterEvents() {
+        const inputBuscar = document.getElementById("filtro-buscar-usuario");
+        const selectRol = document.getElementById("filtro-rol-usuario");
+
+        if (inputBuscar && inputBuscar.dataset.bound !== "true") {
+            inputBuscar.addEventListener("input", () => this._aplicarFiltrosUsuarios());
+            inputBuscar.dataset.bound = "true";
+        }
+
+        if (selectRol && selectRol.dataset.bound !== "true") {
+            selectRol.addEventListener("change", () => this._aplicarFiltrosUsuarios());
+            selectRol.dataset.bound = "true";
+        }
+    },
+
+    /**
+     * Filtra los usuarios almacenados en RAM y renderiza las 6 columnas en #tabla-usuarios-body
+     * @private
+     */
+    _aplicarFiltrosUsuarios() {
+        const tbody = document.getElementById("tabla-usuarios-body");
+        const badgeTotal = document.getElementById("badge-total-usuarios");
+        if (!tbody) return;
+
+        const query = (document.getElementById("filtro-buscar-usuario")?.value || "").trim().toLowerCase();
+        const rolFiltro = (document.getElementById("filtro-rol-usuario")?.value || "TODOS").toUpperCase();
+
+        const filtrados = this._usuariosCache.filter((u) => {
+            const rolActual = String(u.rol || "CLIENTE").trim().toUpperCase();
+            if (rolFiltro !== "TODOS" && rolActual !== rolFiltro) return false;
+
+            if (!query) return true;
+            const textoBusqueda = [
+                u.id,
+                u.nombre,
+                u.telefono,
+                u.direccion,
+                u.nanoAddress,
+                u.pgpFingerprint
+            ]
+                .map((v) => String(v || "").toLowerCase())
+                .join(" ");
+
+            return textoBusqueda.includes(query);
+        });
+
+        if (badgeTotal) {
+            badgeTotal.textContent = `${filtrados.length} de ${this._usuariosCache.length} miembros`;
+        }
+
+        if (filtrados.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-msg" style="text-align: center; padding: 1.5rem;">
+                        No se encontraron miembros registrados que coincidan con el filtro.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = filtrados
+            .map((u) => {
+                const id = this._escapeHTML(u.id || u.idUsuario || "SIN-ID");
+                const nombre = this._escapeHTML(u.nombre || "Sin nombre");
+                const telefono = this._escapeHTML(u.telefono || "—");
+                const direccion = this._escapeHTML(u.direccion || "—");
+                const nanoFull = String(u.nanoAddress || "").trim();
+                const nanoShort = nanoFull
+                    ? `${this._escapeHTML(nanoFull.slice(0, 12))}...${this._escapeHTML(nanoFull.slice(-6))}`
+                    : "Sin asignar";
+                const cascaras = Number(u.cascarasAcumuladas) || 0;
+                const aserrin = Number(u.aserrinAcumulado) || 0;
+                const descuento = Number(u.descuentoDisponible) || 0;
+                const rol = this._escapeHTML(String(u.rol || "CLIENTE").toUpperCase());
+                const estado = this._escapeHTML(String(u.estado || "Activo"));
+                const fpFull = String(u.pgpFingerprint || "").trim();
+                const fpShort =
+                    fpFull && fpFull !== "SIN_FINGERPRINT"
+                        ? `${this._escapeHTML(fpFull.slice(0, 8))}...${this._escapeHTML(fpFull.slice(-8))}`
+                        : "No vinculada";
+
+                return `
+                    <tr>
+                        <td>
+                            <strong>${nombre}</strong><br />
+                            <small class="text-muted">${id}</small>
+                        </td>
+                        <td>
+                            <span>📞 ${telefono}</span><br />
+                            <small class="text-muted">📍 ${direccion}</small>
+                        </td>
+                        <td title="${this._escapeHTML(nanoFull)}">
+                            <code>${nanoShort}</code>
+                        </td>
+                        <td>
+                            🥚 <strong>${cascaras}</strong> cáscaras<br />
+                            🪵 <strong>${aserrin}</strong> bultos<br />
+                            <small class="text-muted">🎟️ Desc: $${descuento.toLocaleString("es-CO")} COP</small>
+                        </td>
+                        <td>
+                            <span class="badge">${rol}</span><br />
+                            <small>${estado === "Activo" ? "🟢" : "🔴"} ${estado}</small>
+                        </td>
+                        <td title="${this._escapeHTML(fpFull)}">
+                            <code>${fpShort}</code>
+                        </td>
+                    </tr>
+                `;
+            })
+            .join("");
+
+        console.log(`[Chuya::AdminUI] Tabla de miembros renderizada (${filtrados.length}/${this._usuariosCache.length} filas).`);
+    },
+
+    /**
      * Renderiza la tabla de pedidos pendientes descifrando en memoria RAM los datos PII (Teléfono y Dirección)
      * Coincide exactamente con la estructura de 6 columnas del HTML
      * @param {Array} pedidos - Lista de objetos de pedido recibidos del backend
@@ -243,29 +414,35 @@ export const AdminUI = {
                     semillas.push(String(p.nanoAddress).trim());
                 }
 
-                const telCifrado = p.telefonoCifrado || p.telefono || "";
-                const dirCifrada = p.direccionCifrada || p.direccion || "";
+                const telCifrado = String(p.telefonoCifrado || p.telefono || "").trim();
+                const dirCifrada = String(p.direccionCifrada || p.direccion || "").trim();
 
                 let telefonoPlano = telCifrado;
                 let direccionPlana = dirCifrada;
                 let telResuelto = !telCifrado;
                 let dirResuelta = !dirCifrada;
 
-                for (const seed of semillas) {
-                    if (telResuelto && dirResuelta) break;
+                if (typeof CryptoUtils?.descifrar === "function") {
+                    for (const seed of semillas) {
+                        if (telResuelto && dirResuelta) break;
 
-                    const [resTel, resDir] = await Promise.all([
-                        !telResuelto ? CryptoUtils.descifrar(telCifrado, seed) : Promise.resolve(telefonoPlano),
-                        !dirResuelta ? CryptoUtils.descifrar(dirCifrada, seed) : Promise.resolve(direccionPlana)
-                    ]);
+                        try {
+                            const [resTel, resDir] = await Promise.all([
+                                !telResuelto ? CryptoUtils.descifrar(telCifrado, seed) : Promise.resolve(telefonoPlano),
+                                !dirResuelta ? CryptoUtils.descifrar(dirCifrada, seed) : Promise.resolve(direccionPlana)
+                            ]);
 
-                    if (!telResuelto && resTel !== telCifrado) {
-                        telefonoPlano = resTel;
-                        telResuelto = true;
-                    }
-                    if (!dirResuelta && resDir !== dirCifrada) {
-                        direccionPlana = resDir;
-                        dirResuelta = true;
+                            if (!telResuelto && typeof resTel === "string" && resTel.trim() !== "" && resTel !== telCifrado) {
+                                telefonoPlano = resTel.trim();
+                                telResuelto = true;
+                            }
+                            if (!dirResuelta && typeof resDir === "string" && resDir.trim() !== "" && resDir !== dirCifrada) {
+                                direccionPlana = resDir.trim();
+                                dirResuelta = true;
+                            }
+                        } catch (decryptErr) {
+                            console.warn(`[Chuya::AdminUI] Intento de descifrado omitido para pedido ${p.idPedido || "N/A"}:`, decryptErr.message);
+                        }
                     }
                 }
 
@@ -354,13 +531,17 @@ export const AdminUI = {
     },
 
     /**
-     * Despliega una notificación flotante Toast
+     * Despliega una notificación flotante Toast (máximo 3 simultáneos)
      * @param {string} mensaje
      * @param {string} tipo - 'success' | 'error' | 'warning'
      */
     mostrarToast(mensaje, tipo = "success") {
         let container = document.getElementById("toast-container");
         if (!container) container = this.crearContenedorToast();
+
+        while (container.children.length >= 3) {
+            container.firstElementChild?.remove();
+        }
 
         const toast = document.createElement("div");
         toast.className = `toast toast-${tipo}`;
@@ -396,7 +577,7 @@ export const AdminUI = {
      * Escapa caracteres HTML para evitar vulnerabilidades XSS
      */
     _escapeHTML(str) {
-        return String(str || "")
+        return String(str ?? "")
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")

@@ -6,7 +6,7 @@
 
 export const CONFIG = Object.freeze({
     APP_NAME: "Chuya",
-    API_URL: "https://script.google.com/macros/s/AKfycbybDwZJ6FcLI44OqqRl1a45L2obasVRT2G4QeaElZVHMWPzytfF91HjFhfmzwl8civsGA/exec",
+    API_URL: "https://script.google.com/macros/s/AKfycbwn4fM5DJUJoL7LlbyKtqL4vr21lZC6rjk9DWy5V1yP2W0t-p-WbTDtiPe1Csw5PvmKgA/exec",
     NANO_RPC_URL: "https://rpc.nano.to",
     STORAGE_KEYS: Object.freeze({
         PRODUCTS: "chuya_products_cache",

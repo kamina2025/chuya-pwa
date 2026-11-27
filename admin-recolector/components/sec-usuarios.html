@@ -1,0 +1,64 @@
+<!-- Sección: Directorio de Miembros Registrados (Tabla Usuarios de Google Sheets) -->
+<section id="sec-usuarios" class="tab-content" aria-labelledby="titulo-sec-usuarios">
+    <div class="section-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+        <div>
+            <h2 id="titulo-sec-usuarios">👥 Miembros Registrados</h2>
+            <p class="text-muted">Directorio sincronizado desde la tabla <strong>Usuarios</strong> (Local-First).</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span id="badge-total-usuarios" class="badge" style="padding: 0.35rem 0.75rem; border-radius: 999px; font-weight: 600;">
+                0 miembros
+            </span>
+            <button type="button" id="btn-refrescar-usuarios" class="btn-secondary" aria-label="Sincronizar lista de usuarios">
+                🔄 Actualizar
+            </button>
+        </div>
+    </div>
+
+    <!-- Barra de Búsqueda y Filtro por Rol en Memoria RAM -->
+    <div class="card" style="margin-bottom: 1rem; padding: 1rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="filtro-buscar-usuario">Buscar miembro:</label>
+                <input
+                    type="search"
+                    id="filtro-buscar-usuario"
+                    placeholder="Nombre, ID, teléfono o nano_..."
+                    autocomplete="off"
+                />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="filtro-rol-usuario">Filtrar por rol:</label>
+                <select id="filtro-rol-usuario">
+                    <option value="TODOS">Todos los roles</option>
+                    <option value="CLIENTE">Cliente</option>
+                    <option value="RECOLECTOR">Recolector</option>
+                    <option value="ADMIN">Administrador</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla Responsiva de Miembros -->
+    <div class="card table-responsive" style="overflow-x: auto;">
+        <table class="data-table" aria-describedby="titulo-sec-usuarios">
+            <thead>
+                <tr>
+                    <th>ID / Miembro</th>
+                    <th>Contacto &amp; Dirección</th>
+                    <th>Dirección Nano (XNO)</th>
+                    <th>Eco-Aportes</th>
+                    <th>Rol / Estado</th>
+                    <th>PGP Fingerprint</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-usuarios-body">
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 1.5rem;">
+                        Cargando miembros registrados desde Chuya...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
