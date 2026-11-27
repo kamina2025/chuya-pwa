@@ -7,7 +7,9 @@ import { CONFIG } from "../config.js";
 import { CartService } from "./cart.js";
 import { APIService } from "./api-service.js";
 import { AuthModule } from "./auth.js";
-import { CryptoUtils } from "./crypto-utils.js";
+import { CryptoUtils } from "../../../js/modules/crypto-utils.js";
+
+console.log("[Chuya::Pedidos] Módulo compartido CryptoUtils cargado correctamente:", Boolean(CryptoUtils));
 
 const ORDER_HISTORY_KEY = "avelibre_order_history";
 
@@ -50,7 +52,9 @@ export const PedidosView = {
 
         container.innerHTML = `
             <div class="cart-items-list">
-                ${cart.map(item => `
+                ${cart
+                    .map(
+                        (item) => `
                     <div class="cart-item-card" data-id="${item.id}">
                         <div class="cart-item-info">
                             <span class="cart-item-icon">${item.icono || "📦"}</span>
@@ -65,7 +69,9 @@ export const PedidosView = {
                             <button type="button" class="btn-remove-item" data-id="${item.id}" aria-label="Eliminar item">&times;</button>
                         </div>
                     </div>
-                `).join("")}
+                `
+                    )
+                    .join("")}
             </div>
 
             <div class="cart-summary mt-4">
@@ -84,7 +90,7 @@ export const PedidosView = {
 
     bindCartEvents() {
         const qtyInputs = document.querySelectorAll(".cart-qty-input");
-        qtyInputs.forEach(input => {
+        qtyInputs.forEach((input) => {
             input.addEventListener("change", (e) => {
                 const id = e.target.getAttribute("data-id");
                 const newQty = parseInt(e.target.value, 10) || 1;
@@ -94,7 +100,7 @@ export const PedidosView = {
         });
 
         const removeBtns = document.querySelectorAll(".btn-remove-item");
-        removeBtns.forEach(btn => {
+        removeBtns.forEach((btn) => {
             btn.addEventListener("click", (e) => {
                 const id = e.currentTarget.getAttribute("data-id");
                 CartService.removeItem(id);
@@ -132,12 +138,16 @@ export const PedidosView = {
         }
 
         if (this.resumenItemsBox) {
-            this.resumenItemsBox.innerHTML = cart.map(i => `
+            this.resumenItemsBox.innerHTML = cart
+                .map(
+                    (i) => `
                 <div class="d-flex justify-content-between text-muted small py-1">
                     <span>${i.cantidad}x ${i.nombre}</span>
                     <strong>$${(i.precio * i.cantidad).toLocaleString("es-CO")} COP</strong>
                 </div>
-            `).join("");
+            `
+                )
+                .join("");
         }
 
         if (this.modalTotalEl) {
@@ -163,7 +173,7 @@ export const PedidosView = {
             this.modal.classList.remove("hidden");
             this.modal.setAttribute("aria-hidden", "false");
             this.modal.removeAttribute("inert");
-            
+
             // Mover el foco al primer input para accesibilidad ARIA
             if (this.inputTelefono) {
                 setTimeout(() => this.inputTelefono.focus(), 50);
@@ -251,7 +261,7 @@ export const PedidosView = {
             const respuesta = await APIService.enviarPedido(orderData);
 
             if (respuesta && (respuesta.success || respuesta.status === "success")) {
-                const idPedido = respuesta.idPedido || ("PED-" + Date.now());
+                const idPedido = respuesta.idPedido || "PED-" + Date.now();
                 this.guardarEnHistorialLocal({
                     idPedido: idPedido,
                     orderData: orderData,
@@ -295,23 +305,32 @@ export const PedidosView = {
         if (!container) return;
 
         try {
-            const pendingOrders = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS?.PENDING_ORDERS || "avelibre_pending_orders") || "[]");
+            const pendingOrders = JSON.parse(
+                localStorage.getItem(CONFIG.STORAGE_KEYS?.PENDING_ORDERS || "avelibre_pending_orders") || "[]"
+            );
             const completedOrders = JSON.parse(localStorage.getItem(ORDER_HISTORY_KEY) || "[]");
 
-            const todos = [...pendingOrders, ...completedOrders].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            const todos = [...pendingOrders, ...completedOrders].sort(
+                (a, b) => (b.timestamp || 0) - (a.timestamp || 0)
+            );
 
             if (todos.length === 0) {
                 container.innerHTML = `<p class="text-center py-3 text-muted">No tienes pedidos en el historial.</p>`;
                 return;
             }
 
-            container.innerHTML = todos.map(p => {
-                const orderObj = p.orderData || p;
-                const fecha = p.timestamp ? new Date(p.timestamp).toLocaleString("es-CO") : "Fecha desconocida";
-                const total = orderObj.totalCOP ? `$${Number(orderObj.totalCOP).toLocaleString("es-CO")} COP` : "Total variable";
-                const firmaStr = orderObj.firmaDigital ? `<div class="text-muted small">🔑 Firma: <code>${orderObj.firmaDigital.substring(0, 18)}...</code></div>` : "";
+            container.innerHTML = todos
+                .map((p) => {
+                    const orderObj = p.orderData || p;
+                    const fecha = p.timestamp ? new Date(p.timestamp).toLocaleString("es-CO") : "Fecha desconocida";
+                    const total = orderObj.totalCOP
+                        ? `$${Number(orderObj.totalCOP).toLocaleString("es-CO")} COP`
+                        : "Total variable";
+                    const firmaStr = orderObj.firmaDigital
+                        ? `<div class="text-muted small">🔑 Firma: <code>${orderObj.firmaDigital.substring(0, 18)}...</code></div>`
+                        : "";
 
-                return `
+                    return `
                     <article class="pedido-card border rounded p-3 mb-2 shadow-sm">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="badge bg-success-subtle text-success">🛍️ Compra Registrada</span>
@@ -321,7 +340,8 @@ export const PedidosView = {
                         ${firmaStr}
                     </article>
                 `;
-            }).join("");
+                })
+                .join("");
         } catch (e) {
             console.error("[AveLibre::Pedidos] Error renderizando historial:", e.message);
         }
