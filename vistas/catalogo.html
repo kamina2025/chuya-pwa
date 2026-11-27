@@ -1,0 +1,24 @@
+<!-- Vista de Catálogo de Productos Solarpunk -->
+<section class="catalogo-section" aria-labelledby="catalogo-titulo">
+    <div class="catalogo-header">
+        <h2 id="catalogo-titulo">📦 Catálogo de Productos</h2>
+        <p class="catalogo-subtitle">Alimentos frescos, locales y con impacto en economía circular.</p>
+        <button type="button" id="btn-refresh-catalogo" class="btn-refresh-sm">🔄 Actualizar Disponibilidad</button>
+    </div>
+
+    <!-- Filtros de Categoría -->
+    <div class="categories-filter" id="categories-filter">
+        <button type="button" class="filter-chip active" data-category="todos">Todos</button>
+        <button type="button" class="filter-chip" data-category="huevos">🥚 Huevos</button>
+        <button type="button" class="filter-chip" data-category="pollo">🍗 Pollo</button>
+        <button type="button" class="filter-chip" data-category="abono">🌱 Abono</button>
+    </div>
+
+    <!-- Indicador de Carga -->
+    <div id="catalogo-loading" class="text-center py-4">
+        <p class="loading-text">🔄 Cargando oferta desde la red/caché...</p>
+    </div>
+
+    <!-- Contenedor Rejilla de Productos -->
+    <div id="productos-grid" class="productos-grid hidden"></div>
+</section>

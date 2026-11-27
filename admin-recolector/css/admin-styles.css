@@ -1,0 +1,394 @@
+:root {
+    --bg-main: #f0fdf4;
+    --primary: #0f766e;
+    --primary-hover: #115e59;
+    --card-bg: #ffffff;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #cbd5e1;
+    --accent: #f59e0b;
+    --sidebar-width: 260px;
+    --bottom-nav-height: 60px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-dark);
+}
+
+/* --- Barra Superior (Top Bar) --- */
+.admin-top-bar {
+    background-color: var(--primary);
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.operator-badge {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* --- Sidebar Lateral --- */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: var(--sidebar-width);
+    height: 100%;
+    background-color: #ffffff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+.sidebar-header {
+    padding: 1rem;
+    background-color: var(--primary);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+}
+
+.sidebar-nav .nav-link {
+    padding: 0.85rem 1.25rem;
+    color: var(--text-dark);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.sidebar-nav .nav-link:hover,
+.sidebar-nav .nav-link.active {
+    background-color: #e6fffa;
+    color: var(--primary);
+    border-left: 4px solid var(--primary);
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.4);
+    z-index: 999;
+    display: none;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* --- Layout Principal y Contenedor --- */
+.container {
+    max-width: 700px;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+    padding-bottom: calc(var(--bottom-nav-height) + 1.5rem);
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.card h3, .card h4 {
+    margin-top: 0;
+    color: var(--primary);
+}
+
+.margin-top {
+    margin-top: 1.5rem;
+}
+
+/* --- Pestañas y Conmutación de Secciones --- */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* --- Formularios --- */
+.form-group {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-group input, 
+.form-group select {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #ffffff;
+}
+
+.btn-submit {
+    width: 100%;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-submit:hover {
+    background-color: var(--primary-hover);
+}
+
+/* --- Tablas Responsivas (Pedidos e Inventario) --- */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.data-table th, 
+.data-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table th {
+    background-color: #f8fafc;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.empty-msg {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 1rem 0;
+}
+
+/* --- Historial de Transacciones --- */
+.history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.history-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.history-time {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.history-amount {
+    font-weight: bold;
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+/* --- Barra Inferior de Navegación Rápida (Bottom Nav) --- */
+.admin-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: var(--bottom-nav-height);
+    background: #ffffff;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 90;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.bottom-nav-btn {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    flex: 1;
+    height: 100%;
+    gap: 2px;
+}
+
+.bottom-nav-btn .icon {
+    font-size: 1.2rem;
+}
+
+.bottom-nav-btn.active {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+/* --- Notificaciones Toast --- */
+.toast-container {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-height) + 15px);
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background: #1e293b;
+    color: #ffffff;
+    padding: 0.85rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-success { border-left: 4px solid #10b981; }
+.toast-error { border-left: 4px solid #ef4444; }
+.toast-warning { border-left: 4px solid #f59e0b; }
+/* ==========================================================================
+   ESTILOS DE IMPRESIÓN PARA TIRILLA POS / RECIBOS TÉRMICOS (80mm)
+   ========================================================================== */
+@media print {
+    /* 1. Ocultar toda la interfaz de la PWA que no sea la tarjeta resultante */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* 2. Mostrar únicamente el contenedor de la tarjeta QR */
+    #resultado-registro-qr, #resultado-registro-qr * {
+        visibility: visible !important;
+    }
+
+    /* 3. Posicionar la tirilla en la esquina superior izquierda a ancho 80mm */
+    #resultado-registro-qr {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 80mm !important;
+        max-width: 80mm !important;
+        margin: 0 !important;
+        padding: 6px 8px !important;
+        border: 1px dashed #0f766e !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+    }
+
+    /* 4. Ocultar los botones dentro de la tirilla durante la impresión */
+    #btn-imprimir-qr, #btn-nuevo-registro, .btn-submit, .btn-link {
+        display: none !important;
+    }
+
+    /* 5. Ajustar tamaño de textos y gráfico QR */
+    .qr-box canvas, .qr-box img {
+        width: 140px !important;
+        height: 140px !important;
+        margin: 4px auto !important;
+        display: block !important;
+    }
+
+    .qr-details {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+    }
+
+    .qr-details code, .qr-details small {
+        font-family: monospace !important;
+        word-break: break-all !important;
+        font-size: 9px !important;
+    }
+}

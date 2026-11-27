@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuya | Generador Offline de Pool Nano</title>
+    <!-- Ruta a la librería local nanocurrency / nanocurrency-web -->
+    <script src="libs/nanocurrency.min.js"></script>
+    <style>
+        :root {
+            --primary: #0f766e;
+            --primary-hover: #115e59;
+            --bg-main: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --border-color: #cbd5e1;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        input[type="password"], textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        button.secondary {
+            background-color: #64748b;
+        }
+        button.secondary:hover {
+            background-color: #475569;
+        }
+        .warning-box {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔒 Generador Offline de Pool Nano (XNO)</h2>
+    
+    <div class="warning-box">
+        ⚠️ <strong>Recomendación de Seguridad Off-Grid:</strong> Desconecta la conexión a Internet o Wi-Fi antes de pegar tu semilla maestra.
+    </div>
+
+    <div class="form-group">
+        <label for="input-seed">Semilla Maestra (64 caracteres HEX):</label>
+        <input type="password" id="input-seed" placeholder="Ingresa tu clave semilla hexadecimal de 64 caracteres..." autocomplete="off" />
+    </div>
+
+    <div class="btn-group">
+        <button onclick="generarPool()">🚀 Generar 100 Direcciones Públicas</button>
+        <button onclick="copiarCSV()" class="secondary">📋 Copiar al Portapapeles</button>
+        <button onclick="descargarCSV()" class="secondary">💾 Descargar .CSV</button>
+    </div>
+
+    <div class="form-group">
+        <label for="resultado">Resultado Formato CSV (Listo para Google Sheets):</label>
+        <textarea id="resultado" rows="18" placeholder="El contenido CSV generado aparecerá aquí..." readonly></textarea>
+    </div>
+</div>
+
+<script>
+    console.log("[AveLibre::PoolGen] Módulo de generación de pool offline cargado.");
+
+    /**
+     * Inspecciona y devuelve el derivador compatible con nanocurrency o nanocurrency-web
+     */
+    function resolverDerivadorNano() {
+        const candidatos = [
+            window.nanocurrency,
+            window.Nanocurrency,
+            window.nanocurrencyWeb,
+            window.NanocurrencyWeb,
+            window
+        ];
+
+        let lib = null;
+        for (const c of candidatos) {
+            if (!c) continue;
+            if (c.deriveSecretKey || c.wallet || (c.default && (c.default.deriveSecretKey || c.default.wallet))) {
+                lib = c.default || c;
+                break;
+            }
+        }
+
+        if (!lib) return null;
+
+        console.log("[AveLibre::PoolGen] Objeto global resuelto:", lib);
+
+        // Opción 1: nanocurrency-web (wallet.legacyAccounts)
+        if (lib.wallet && typeof lib.wallet.legacyAccounts === "function") {
+            console.log("[AveLibre::PoolGen] Modo detectado: nanocurrency-web (wallet.legacyAccounts)");
+            return {
+                tipo: "lote",
+                ejecutar: (seed, total) => {
+                    const accounts = lib.wallet.legacyAccounts(seed, 0, total - 1);
+                    return accounts.map((acc, idx) => ({ index: idx, address: acc.address }));
+                }
+            };
+        }
+
+        // Opción 2: nanocurrency-web (wallet.accounts)
+        if (lib.wallet && typeof lib.wallet.accounts === "function") {
+            console.log("[AveLibre::PoolGen] Modo detectado: nanocurrency-web (wallet.accounts)");
+            return {
+                tipo: "lote",
+                ejecutar: (seed, total) => {
+                    const accounts = lib.wallet.accounts(seed, 0, total - 1);
+                    return accounts.map((acc, idx) => ({ index: idx, address: acc.address }));
+                }
+            };
+        }
+
+        // Opción 3: nanocurrency estándar (deriveSecretKey + derivePublicKey + deriveAddress)
+        if (typeof lib.deriveSecretKey === "function") {
+            console.log("[AveLibre::PoolGen] Modo detectado: nanocurrency (deriveSecretKey)");
+            return {
+                tipo: "unidad",
+                ejecutar: (seed, index) => {
+                    const secretKey = lib.deriveSecretKey(seed, index);
+                    const publicKey = typeof lib.derivePublicKey === "function" ? lib.derivePublicKey(secretKey) : secretKey;
+                    return typeof lib.deriveAddress === "function" 
+                        ? lib.deriveAddress(publicKey, { useNanoPrefix: true }) 
+                        : publicKey;
+                }
+            };
+        }
+
+        return null;
+    }
+
+    function generarPool() {
+        console.log("[AveLibre::PoolGen] Iniciando proceso de derivación criptográfica...");
+        const seedInput = document.getElementById("input-seed");
+        let rawSeed = seedInput.value ? seedInput.value.trim() : "";
+
+        // Validar formato Hexadecimal estricto de 64 caracteres
+        const hexRegex = /^[0-9a-fA-F]{64}$/;
+        if (!hexRegex.test(rawSeed)) {
+            console.warn("[AveLibre::PoolGen] Validación fallida: Formato de semilla inválido.");
+            alert("Error: La semilla debe contener exactamente 64 caracteres hexadecimales (0-9, a-f).");
+            return;
+        }
+
+        const derivador = resolverDerivadorNano();
+
+        if (!derivador) {
+            console.error("[AveLibre::PoolGen] Error crítico: No se encontraron funciones compatibles en nanocurrency.min.js.");
+            alert("Error: No se reconocieron las funciones criptográficas en libs/nanocurrency.min.js.");
+            return;
+        }
+
+        try {
+            console.log("[AveLibre::PoolGen] Derivando 100 direcciones públicas (índices 0 a 99)...");
+            let csv = "indice,nanoAddress,estado\n";
+
+            if (derivador.tipo === "lote") {
+                const resultados = derivador.ejecutar(rawSeed, 100);
+                resultados.forEach(item => {
+                    csv += `${item.index},${item.address},DISPONIBLE\n`;
+                });
+            } else {
+                for (let i = 0; i < 100; i++) {
+                    const address = derivador.ejecutar(rawSeed, i);
+                    csv += `${i},${address},DISPONIBLE\n`;
+                }
+            }
+
+            document.getElementById("resultado").value = csv;
+            console.log("[AveLibre::PoolGen] Generación completada con éxito. 100 direcciones públicas generadas.");
+            
+            // Limpieza inmediata del campo de entrada por seguridad
+            seedInput.value = "";
+            rawSeed = null;
+            console.log("[AveLibre::PoolGen] Semilla maestra purgada de la memoria local.");
+            
+            alert("✅ ¡100 direcciones públicas derivadas con éxito! El campo de la semilla ha sido limpiado por seguridad.");
+        } catch (err) {
+            console.error("[AveLibre::PoolGen] Excepción durante la derivación criptográfica:", err);
+            alert("❌ Error durante la derivación criptográfica: " + err.message);
+        }
+    }
+
+    function copiarCSV() {
+        const txt = document.getElementById("resultado");
+        if (!txt.value) {
+            console.warn("[AveLibre::PoolGen] Intento de copia abortado: No hay contenido CSV generado.");
+            alert("Primero debes generar las direcciones.");
+            return;
+        }
+        navigator.clipboard.writeText(txt.value).then(() => {
+            console.log("[AveLibre::PoolGen] Contenido CSV copiado al portapapeles exitosamente.");
+            alert("📋 CSV copiado al portapapeles.");
+        }).catch(err => {
+            console.error("[AveLibre::PoolGen] Error al copiar al portapapeles:", err);
+        });
+    }
+
+    function descargarCSV() {
+        const txt = document.getElementById("resultado").value;
+        if (!txt) {
+            console.warn("[AveLibre::PoolGen] Intento de descarga abortado: No hay contenido CSV generado.");
+            alert("Primero debes generar las direcciones.");
+            return;
+        }
+        console.log("[AveLibre::PoolGen] Descargando archivo pool_direcciones_nano.csv...");
+        const blob = new Blob([txt], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "pool_direcciones_nano.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
+
+</body>
+</html>

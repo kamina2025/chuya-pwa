@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuya | Credencial Solarpunk</title>
+    <!-- Librería QRCode.js con fallback defensivo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* --- ESTÉTICA SOLARPUNK & MAQUETACIÓN PARA TIRILLA DE RECIBOS (80mm) --- */
+        :root {
+            --solar-green: #0f766e;
+            --solar-green-light: #f0fdf4;
+            --solar-gold: #d97706;
+            --solar-dark: #1e293b;
+            --solar-border: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            color: var(--solar-dark);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Botón de control no imprimible */
+        .print-actions {
+            margin-bottom: 10px;
+            width: 80mm;
+            max-width: 100%;
+        }
+
+        .btn-print {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--solar-green);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-print:hover {
+            background-color: #115e59;
+        }
+
+        /* Contenedor ajustado a 80mm para rollo de impresora térmica */
+        .ticket-container {
+            width: 80mm;
+            max-width: 100%;
+            background-color: #ffffff;
+            padding: 12px 10px;
+            border: 2px solid var(--solar-green);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        /* Cabecera Solarpunk */
+        .ticket-header {
+            text-align: center;
+            border-bottom: 2px dashed var(--solar-green);
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--solar-green);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-subtitle {
+            font-size: 9px;
+            color: var(--solar-gold);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Datos del Miembro */
+        .member-info {
+            background-color: var(--solar-green-light);
+            border: 1px solid var(--solar-green);
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin-bottom: 8px;
+        }
+
+        .info-row {
+            margin-bottom: 4px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            font-weight: 700;
+            color: var(--solar-green);
+            display: block;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+
+        .value {
+            font-family: monospace;
+            font-size: 9.5px;
+            overflow-wrap: anywhere;
+            word-break: break-all;
+            color: var(--solar-dark);
+        }
+
+        /* Contenedor del QR */
+        .qr-section {
+            text-align: center;
+            margin: 8px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .qr-box {
+            background: #ffffff;
+            padding: 6px;
+            border: 1px solid var(--solar-border);
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .qr-box canvas,
+        .qr-box img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Bloque Instructivo e Invitación a Recompensas */
+        .reward-box {
+            border: 1px solid var(--solar-gold);
+            background-color: #fffbeb;
+            border-radius: 6px;
+            padding: 6px 8px;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .reward-title {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--solar-gold);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .reward-text {
+            font-size: 8.5px;
+            color: #78350f;
+            text-align: justify;
+        }
+
+        /* Pie de página con enlace a la PWA */
+        .ticket-footer {
+            margin-top: 8px;
+            text-align: center;
+            border-top: 1px dashed var(--solar-border);
+            padding-top: 6px;
+        }
+
+        .pwa-url {
+            font-family: monospace;
+            font-size: 8.5px;
+            font-weight: bold;
+            color: var(--solar-green);
+            overflow-wrap: anywhere;
+            word-break: break-all;
+        }
+
+        /* Reglas estrictas para impresión en Papel Térmico (80mm) */
+        @media print {
+            @page {
+                size: 80mm auto;
+                margin: 0;
+            }
+
+            html, body {
+                width: 80mm !important;
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .ticket-container {
+                border: none !important;
+                box-shadow: none !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
+                padding: 4mm !important;
+                margin: 0 auto !important;
+            }
+
+            .no-print, .print-actions {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="print-actions no-print">
+    <button type="button" class="btn-print" onclick="imprimirTirilla()">🖨️ Imprimir Credencial Chuya (80mm POS)</button>
+</div>
+
+<main class="ticket-container" id="ticket-credencial">
+    <!-- Cabecera -->
+    <header class="ticket-header">
+        <div class="brand-title">🌱 CHUYA</div>
+        <div class="brand-subtitle">Frescura, Transparencia &amp; Economía Circular</div>
+    </header>
+
+    <!-- Información del Miembro (Compatible con QRPDFImporter) -->
+    <section class="member-info" aria-label="Credenciales del Miembro">
+        <div class="info-row">
+            <span class="label">Miembro:</span>
+            <span class="value" id="disp-nombre">María Pérez</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Dirección Nano (XNO):</span>
+            <span class="value" id="disp-nano">nano_3mpkunxtfhefysithzccx5rjcgyhk47m1w1ob1xfxnrth6ck3kbm3q6w6dd7</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Identidad PGP (Fingerprint):</span>
+            <span class="value" id="disp-pgp">6D3A396233E7E090A1058E2361CBCC70701F9CCA</span>
+        </div>
+    </section>
+
+    <!-- Código QR -->
+    <section class="qr-section" aria-label="Código QR de Identidad">
+        <div id="qrcode" class="qr-box"></div>
+    </section>
+
+    <!-- Instructivo e Invitación Solarpunk -->
+    <section class="reward-box" aria-label="Programa de Recompensas">
+        <div class="reward-title">🥚 ¡Entrega Insumos y Gana Recompensas!</div>
+        <p class="reward-text">
+            Presenta esta credencial al recolector de <strong>Chuya</strong> al entregar <strong>cáscaras de huevo o aserrín</strong>. Acumula saldo en Nano (XNO) para canjear por huevos frescos, productos avícolas o descuentos directos.
+        </p>
+    </section>
+
+    <!-- Dirección Web PWA -->
+    <footer class="ticket-footer">
+        <span class="label">Accede a tu PWA Chuya:</span>
+        <div class="pwa-url" id="disp-url">http://localhost/chuya-pwa/index.html#inicio</div>
+    </footer>
+</main>
+
+<script>
+    /**
+     * Carga dinámica de parámetros URL si existen (?name=...&nano=...&pgp=...&url=...)
+     */
+    function inicializarDatosDesdeURL() {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.has("name")) {
+            document.getElementById("disp-nombre").innerText = params.get("name").trim();
+        }
+        if (params.has("nano")) {
+            document.getElementById("disp-nano").innerText = params.get("nano").trim();
+        }
+        if (params.has("pgp")) {
+            document.getElementById("disp-pgp").innerText = params.get("pgp").trim();
+        }
+        if (params.has("url")) {
+            document.getElementById("disp-url").innerText = params.get("url").trim();
+        } else {
+            // Resolver ruta local dinámica si no se envía parámetro explícito
+            const basePath = window.location.pathname.replace(/\/admin\/print-ticket\.html$/i, "/index.html#inicio")
+                .replace(/\/print-ticket\.html$/i, "/index.html#inicio");
+            if (window.location.origin && window.location.origin !== "null") {
+                document.getElementById("disp-url").innerText = `${window.location.origin}${basePath}`;
+            }
+        }
+
+        const nombreActual = document.getElementById("disp-nombre").innerText.trim();
+        document.title = `Chuya_Credencial_${nombreActual.replace(/\s+/g, "_")}`;
+        console.log("[Chuya::Ticket] Datos de credencial inicializados para:", nombreActual);
+    }
+
+    /**
+     * Generación defensiva del Código QR
+     */
+    function generarQR() {
+        inicializarDatosDesdeURL();
+
+        const nanoAddr = document.getElementById("disp-nano").innerText.trim();
+        const pgpFingerprint = document.getElementById("disp-pgp").innerText.trim();
+        const nombre = document.getElementById("disp-nombre").innerText.trim();
+        const qrContainer = document.getElementById("qrcode");
+
+        if (!qrContainer) return;
+        qrContainer.innerHTML = "";
+
+        // Payload compacto optimizado para escáneres térmicos
+        const payloadQR = JSON.stringify({
+            app: "chuya",
+            name: nombre,
+            nano: nanoAddr,
+            pgp: pgpFingerprint
+        });
+
+        const QRConstructor = window.QRCode || (typeof QRCode !== "undefined" ? QRCode : null);
+
+        if (QRConstructor) {
+            try {
+                new QRConstructor(qrContainer, {
+                    text: payloadQR,
+                    width: 130,
+                    height: 130,
+                    colorDark: "#0f766e",
+                    colorLight: "#ffffff",
+                    correctLevel: QRConstructor.CorrectLevel ? QRConstructor.CorrectLevel.L : 1
+                });
+                console.log("[Chuya::Ticket] Código QR de credencial renderizado correctamente.");
+            } catch (err) {
+                console.error("[Chuya::Ticket] Error al instanciar código QR:", err);
+                qrContainer.innerHTML = `<small style="color:red; font-size:8px;">Error QR</small>`;
+            }
+        } else {
+            console.warn("[Chuya::Ticket] Librería QRCode.js no detectada.");
+            qrContainer.innerHTML = `<small style="color:orange; font-size:8px;">⚠️ QR no disponible</small>`;
+        }
+    }
+
+    /**
+     * Ejecución diferida de impresión para garantizar montaje del Canvas
+     */
+    function imprimirTirilla() {
+        console.log("[Chuya::Ticket] Lanzando impresión térmica de credencial...");
+        generarQR();
+        setTimeout(() => {
+            window.print();
+        }, 200);
+    }
+
+    // Inicializar al cargar el documento
+    document.addEventListener("DOMContentLoaded", () => {
+        console.log("[Chuya::Ticket] Documento de credencial cargado.");
+        generarQR();
+
+        // Si la URL contiene el parámetro autoprint=true, lanza la impresión automáticamente
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("autoprint") === "true") {
+            console.log("[Chuya::Ticket] Modo autoprint activado.");
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+    });
+</script>
+
+</body>
+</html>

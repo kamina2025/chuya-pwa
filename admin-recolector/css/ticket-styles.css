@@ -1,0 +1,322 @@
+/* ==========================================================================
+   Chuya - GENERADOR DE TICKETS PROMOCIONALES & RECIBOS POS (80mm)
+   ========================================================================== */
+
+/* --- Layout Principal del Generador --- */
+.ticket-app-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 850px) {
+    .ticket-app-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Cajas de Presets y Zona Dropzone --- */
+.preset-box {
+    background-color: var(--bg-main, #f0fdf4);
+    border: 1px dashed var(--primary, #0f766e);
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.dropzone-container {
+    border: 2px dashed var(--border-color, #cbd5e1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    background: #fafafa;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.dropzone-container:hover {
+    background: #f0fdf4;
+    border-color: var(--primary, #0f766e);
+}
+
+.dropzone-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* --- Diseños del Ticket Térmico POS (80mm) en Pantalla --- */
+.ticket-preview-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pos-receipt {
+    width: 280px;
+    max-width: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+    padding: 15px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: 'Courier New', Courier, monospace;
+    color: #000000;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.pos-header {
+    text-align: center;
+}
+
+.pos-header h2 {
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+}
+
+.pos-subtitle {
+    margin: 2px 0;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.pos-branch {
+    font-size: 10px;
+    color: #444444;
+}
+
+.pos-divider {
+    border: none;
+    border-top: 1px dashed #000000;
+    margin: 8px 0;
+}
+
+.pos-divider-double {
+    border: none;
+    border-top: 2px solid #000000;
+    margin: 8px 0;
+}
+
+.pos-title {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.pos-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+    word-break: break-word;
+}
+
+.pos-total {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* --- Sección Promocional Solarpunk --- */
+.pos-promo-section {
+    background: #f9f9f9;
+    border: 1px solid #000000;
+    padding: 8px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.promo-head {
+    font-weight: bold;
+    font-size: 11px;
+    margin: 0 0 4px 0;
+}
+
+.promo-text {
+    font-size: 10px;
+    margin: 0 0 6px 0;
+}
+
+.promo-badge {
+    font-weight: bold;
+    font-size: 11px;
+    background: #000000;
+    color: #ffffff;
+    padding: 4px;
+    display: block;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.promo-sub {
+    font-size: 9px;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* --- Sección QR e Identidad --- */
+.pos-qr-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.pos-qr-box #receipt-qr-code canvas,
+.pos-qr-box #receipt-qr-code img {
+    width: 110px !important;
+    height: 110px !important;
+    display: block;
+    margin: 0 auto;
+}
+
+.pos-footer {
+    text-align: center;
+    font-size: 10px;
+    margin-top: 10px;
+}
+
+.pos-hash {
+    font-size: 9px;
+    margin-top: 4px;
+    word-break: break-all;
+}
+
+/* ==========================================================================
+   REGLAS DEFENSIVAS DE IMPRESIÓN UNIFICADAS PARA TICKET TÉRMICO POS (80mm)
+   ========================================================================== */
+@media print {
+    /* 1. Configuración de página continua de 80mm sin márgenes del navegador */
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+
+    /* 2. Configuración general del lienzo de impresión */
+    html, body {
+        width: 80mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* 3. Ocultar interfaz global por defecto */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* 4. Ocultar controles, formularios, botones y elementos con clase .no-print */
+    header,
+    nav,
+    aside,
+    .admin-top-bar,
+    .admin-bottom-nav,
+    .sidebar,
+    .sidebar-overlay,
+    .ticket-controls-panel,
+    .preset-box,
+    .dropzone-container,
+    #toast-container,
+    button,
+    form,
+    h3,
+    h4,
+    .no-print {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 5. Desbloquear la cadena de contenedores padres del ticket */
+    main,
+    main.container,
+    section,
+    #sec-ticket-generador,
+    .card,
+    .tab-content,
+    .ticket-app-grid,
+    .ticket-preview-panel {
+        display: block !important;
+        visibility: visible !important;
+        position: static !important;
+        width: 80mm !important;
+        max-width: 80mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        overflow: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* 6. Rescatar e invisibilizar oclusiones para el ticket térmico */
+    #resultado-registro-qr,
+    #resultado-registro-qr *,
+    #thermal-receipt,
+    #thermal-receipt * {
+        visibility: visible !important;
+    }
+
+    /* 7. Posicionar la tirilla térmica en el origen del lienzo */
+    #thermal-receipt {
+        display: block !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 80mm !important;
+        max-width: 80mm !important;
+        box-sizing: border-box !important;
+        padding: 4mm !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 11px !important;
+        line-height: 1.2 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* 8. Corrección de duplicación de Código QR (QRCode.js) */
+    #receipt-qr-code {
+        display: block !important;
+        visibility: visible !important;
+        margin: 4px auto !important;
+    }
+
+    /* Ocultar el canvas duplicado que genera la librería */
+    #receipt-qr-code canvas {
+        display: none !important;
+    }
+
+    /* Renderizar exclusivamente la imagen Base64 */
+    #receipt-qr-code img {
+        display: block !important;
+        visibility: visible !important;
+        width: 110px !important;
+        height: 110px !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+    }
+}

@@ -1,0 +1,38 @@
+<section id="sec-recompensar" class="card tab-content">
+    <h3>🎁 Recompensar y Recargar</h3>
+    <form id="form-recoleccion">
+        <div class="form-group">
+            <label for="target-address">Dirección del Cliente (Nano Address / ID):</label>
+            <input type="text" id="target-address" placeholder="nano_3... o ID Cliente" required />
+        </div>
+
+        <div class="form-group">
+            <label for="tipo-transaccion">Tipo de Aporte / Operación:</label>
+            <select id="tipo-transaccion">
+                <option value="cascaras">🥚 Recolección de Cáscaras (Unidades)</option>
+                <option value="aserrin">🪵 Recolección de Aserrín (Bultos)</option>
+                <option value="venta">🍗 Venta Avícola / Recarga Saldo</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="cantidad">Cantidad / Monto:</label>
+            <input
+                type="number"
+                id="cantidad"
+                step="any"
+                min="0.1"
+                placeholder="Ej. 12 cáscaras o 1.5 bultos"
+                required />
+        </div>
+
+        <button type="submit" id="btn-procesar" class="btn-submit">✍️ Firmar y Asignar Recompensa</button>
+    </form>
+
+    <div class="margin-top">
+        <h4>📜 Historial de Sesión</h4>
+        <ul id="history-list" class="history-list">
+            <li class="empty-msg">No hay transacciones registradas en esta sesión.</li>
+        </ul>
+    </div>
+</section>

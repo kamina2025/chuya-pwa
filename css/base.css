@@ -1,0 +1,103 @@
+/**
+ * Chuya - Variables de Tema Solarpunk, Reset & Reglas Base
+ * Stack: CSS3 Vanilla / Mobile-First
+ */
+
+/* ==========================================================================
+   1. VARIABLES DE TEMA (SOLARPUNK PALETTE & SYSTEM)
+   ========================================================================== */
+:root {
+  --sp-leaf-green: #10b981;
+  --sp-leaf-green-dark: #047857;
+  --sp-solar-gold: #f59e0b;
+  --sp-solar-amber: #d97706;
+  --sp-terra-cotta: #c2410c;
+  --sp-bio-teal: #0d9488;
+  
+  --sp-bg-canvas: #f4f7f4;
+  --sp-bg-card: rgba(255, 255, 255, 0.88);
+  --sp-bg-nav: rgba(255, 255, 255, 0.92);
+  --sp-card-border: rgba(16, 185, 129, 0.25);
+  --sp-text-main: #1f2937;
+  --sp-text-muted: #4b5563;
+  --sp-box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15);
+
+  --sp-font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --sp-radius-card: 20px;
+  --sp-radius-pill: 50px;
+  --sp-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --top-bar-height: 60px;
+  --bottom-bar-height: 65px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sp-bg-canvas: #0f1715;
+    --sp-bg-card: rgba(20, 31, 27, 0.88);
+    --sp-bg-nav: rgba(15, 23, 21, 0.94);
+    --sp-card-border: rgba(16, 185, 129, 0.35);
+    --sp-text-main: #f3f4f6;
+    --sp-text-muted: #9ca3af;
+    --sp-box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  }
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--sp-font-family);
+  background-color: var(--sp-bg-canvas);
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+  background-attachment: fixed;
+  color: var(--sp-text-main);
+  line-height: 1.6;
+  min-height: 100vh;
+  padding-top: calc(var(--top-bar-height) + 1rem);
+  padding-bottom: calc(var(--bottom-bar-height) + 1.5rem);
+}
+
+.container {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Animaciones & Utilitarios Globales */
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hidden { display: none !important; }
+.hidden-file-input { display: none !important; }
+.w-full { width: 100%; }
+.text-center { text-align: center; }
+.text-sm { font-size: 0.85rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mt-4 { margin-top: 1rem; }
+.flex { display: flex; }
+.gap-2 { gap: 0.5rem; }
+.justify-center { justify-content: center; }

@@ -1,0 +1,246 @@
+/**
+ * Chuya - Estilos de Estructura y Navegación PWA
+ * Stack: CSS3 Vanilla / Mobile-First
+ */
+
+/* ==========================================================================
+   1. BARRA SUPERIOR (TOP BAR)
+   ========================================================================== */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--top-bar-height);
+  background: var(--sp-bg-nav);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--sp-card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--sp-leaf-green-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  .brand-title {
+    color: var(--sp-leaf-green);
+  }
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--sp-text-main);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  transition: var(--sp-transition);
+}
+
+.icon-btn:hover {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.btn-pwa-install {
+  background: linear-gradient(135deg, var(--sp-solar-gold), var(--sp-solar-amber));
+  color: #ffffff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--sp-radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  transition: var(--sp-transition);
+}
+
+.btn-pwa-install:hover {
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   2. SIDEBAR DESLIZABLE (SLIDING DRAWER) & OVERLAY
+   ========================================================================== */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
+  background: var(--sp-bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--sp-card-border);
+  z-index: 1100;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid var(--sp-card-border);
+}
+
+.sidebar-header h3 {
+  font-size: 1.1rem;
+  color: var(--sp-leaf-green-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  .sidebar-header h3 {
+    color: var(--sp-leaf-green);
+  }
+}
+
+.icon-btn-close {
+  background: none;
+  border: none;
+  font-size: 1.75rem;
+  color: var(--sp-text-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+}
+
+.sidebar-nav a {
+  display: block;
+  padding: 0.85rem 1.25rem;
+  color: var(--sp-text-main);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--sp-transition);
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--sp-leaf-green-dark);
+  border-left: 4px solid var(--sp-leaf-green);
+}
+
+.sidebar-footer {
+  padding: 1.25rem 1rem;
+  border-top: 1px solid var(--sp-card-border);
+  text-align: center;
+}
+
+.btn-pwa-install-sidebar {
+  width: 100%;
+  background: linear-gradient(135deg, var(--sp-leaf-green), var(--sp-leaf-green-dark));
+  color: #fff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: var(--sp-radius-pill);
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.app-version {
+  font-size: 0.75rem;
+  color: var(--sp-text-muted);
+}
+
+/* ==========================================================================
+   3. BARRA INFERIOR (BOTTOM NAV BAR)
+   ========================================================================== */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-bar-height);
+  background: var(--sp-bg-nav);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--sp-card-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--sp-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: var(--sp-transition);
+  width: 25%;
+}
+
+.bottom-nav-item .nav-icon {
+  font-size: 1.25rem;
+}
+
+.bottom-nav-item.active,
+.bottom-nav-item:hover {
+  color: var(--sp-leaf-green-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  .bottom-nav-item.active,
+  .bottom-nav-item:hover {
+    color: var(--sp-leaf-green);
+  }
+}

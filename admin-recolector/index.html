@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#0f766e" />
+        <meta name="description" content="PWA Operativa Chuya - Módulo de Administración y Recolección en Campo" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Chuya Admin" />
+
+        <title>Chuya | Panel Recolector &amp; Admin</title>
+
+        <!-- Manifest PWA e Iconos de Marca Chuya -->
+        <link rel="manifest" href="manifest.json" />
+        <link rel="icon" type="image/png" href="../assets/icons/favicon.png" />
+        <link rel="apple-touch-icon" href="../assets/icons/icon-192x192.png" />
+
+        <!-- Hojas de Estilo Operativas y de Tickets Térmicos -->
+        <link rel="stylesheet" href="css/admin-styles.css" />
+        <link rel="stylesheet" href="css/ticket-styles.css" />
+    </head>
+    <body>
+        <!-- Ranuras de inyección para componentes modulares -->
+        <div data-component="components/header.html"></div>
+        <div data-component="components/sidebar.html"></div>
+
+        <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div>
+
+        <!-- Contenedor Principal de Secciones -->
+        <main id="admin-main-content" class="container">
+            <div data-component="components/sec-registrar-miembro.html"></div>
+            <div data-component="components/sec-recompensar.html"></div>
+            <div data-component="components/sec-ticket-generador.html"></div>
+            <div data-component="components/sec-pedidos.html"></div>
+            <div data-component="components/sec-inventario.html"></div>
+        </main>
+
+        <div data-component="components/bottom-nav.html"></div>
+
+        <!-- Librerías Locales Criptográficas, QR y Generación PDF -->
+        <script src="../libs/nanocurrency.min.js"></script>
+        <script src="../libs/openpgp.min.js"></script>
+        <script src="../libs/qrcode.min.js"></script>
+        <script src="../libs/jspdf.umd.min.js"></script>
+
+        <!-- Verificación de entorno y registro Service Worker Local-First -->
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                console.log("[Chuya::AdminIndex] App Shell de Administración y Recolección cargado.", {
+                    nanoLoaded: Boolean(window.NanoCurrency),
+                    openpgpLoaded: Boolean(window.openpgp),
+                    qrLoaded: Boolean(window.QRCode),
+                    jsPDFLoaded: Boolean(window.jspdf?.jsPDF || window.jsPDF)
+                });
+
+                if ("serviceWorker" in navigator) {
+                    navigator.serviceWorker
+                        .register("sw.js")
+                        .then((reg) => {
+                            console.log("[Chuya::AdminIndex] Service Worker operativo activo. Scope:", reg.scope);
+                        })
+                        .catch((err) => {
+                            console.warn("[Chuya::AdminIndex] Service Worker no registrado (verificar sw.js):", err.message);
+                        });
+                }
+            });
+        </script>
+
+        <!-- Script Principal de Orquestación Operativa -->
+        <script type="module" src="js/admin-app.js"></script>
+    </body>
+</html>

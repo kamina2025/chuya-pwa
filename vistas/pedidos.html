@@ -1,0 +1,105 @@
+<!-- Vista de Pedidos, Carrito Activo e Historial Sincronizado Solarpunk -->
+<section class="pedidos-section container py-4" aria-labelledby="pedidos-titulo">
+    <!-- Encabezado de la Sección -->
+    <header class="pedidos-header text-center mb-4">
+        <div class="solarpunk-badge mb-2">
+            <span class="badge-icon">🌿</span>
+            <span class="badge-text">Circuito Local &amp; Desacoplado</span>
+        </div>
+        <h2 id="pedidos-titulo" class="display-6 fw-bold color-eco-primary">🛒 Mi Pedido Activo</h2>
+        <p class="pedidos-subtitle text-muted">Revisa los productos seleccionados y confirma tu entrega firmada digitalmente.</p>
+    </header>
+
+    <!-- Card Principal: Carrito Activo -->
+    <article class="solarpunk-card shadow-sm border-0 mb-5">
+        <div class="card-header-eco d-flex justify-content-between align-items-center p-3">
+            <h3 class="h5 m-0 fw-bold">📦 Canasta Actual</h3>
+            <span id="carrito-count-badge" class="badge rounded-pill bg-success-subtle text-success border border-success">
+                Cargando ítems...
+            </span>
+        </div>
+        <div class="card-body p-3 p-md-4">
+            <!-- Sección Carrito Activo (Hydrated via pedidos.js) -->
+            <div id="carrito-contenedor" class="carrito-box">
+                <div class="empty-state text-center py-4">
+                    <div class="spinner-border text-success mb-2" role="status">
+                        <span class="visually-hidden">Cargando carrito...</span>
+                    </div>
+                    <p class="text-muted small">Cargando productos seleccionados...</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr class="eco-divider my-5" />
+
+    <!-- Sección Historial de Pedidos y Sincronización Backend -->
+    <header class="pedidos-historial-header d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h3 class="h4 fw-bold color-eco-secondary m-0">📜 Historial de Pedidos Realizados</h3>
+            <p class="text-muted small m-0">Registros sincronizados con la API de Google Sheets y la red Local-First.</p>
+        </div>
+        
+        <!-- Barra de Estado y Sincronización Manual -->
+        <div class="sync-actions-bar d-flex align-items-center gap-2">
+            <span id="sync-status-indicator" class="sync-status-badge offline" title="Estado de conexión con el backend">
+                <span class="dot-indicator"></span> Sincronizado
+            </span>
+            <button type="button" id="btn-sync-now" class="btn btn-outline-success btn-sm rounded-pill d-inline-flex align-items-center gap-1" aria-label="Sincronizar pedidos pendientes con el backend">
+                <span class="sync-icon">🔄</span> Sincronizar
+            </button>
+        </div>
+    </header>
+
+    <!-- Lista del Historial (Hydrated via pedidos.js) -->
+    <div id="pedidos-lista" class="pedidos-lista grid-historial gap-3">
+        <div class="empty-state-historial text-center py-4 card-placeholder">
+            <p class="text-muted">Consultando historial local y en la red...</p>
+        </div>
+    </div>
+</section>
+
+<!-- Modal de Resumen de Pedido y Datos de Contacto Cifrados (AES-GCM Local-First) -->
+<!-- Modal Flotante de Resumen de Pedido y Datos Cifrados PII -->
+<div id="modal-resumen-pedido" class="modal-backdrop hidden" aria-hidden="true" role="dialog" aria-labelledby="modal-titulo-pedidos">
+    <div class="modal-card shadow-lg">
+        <div class="modal-header d-flex justify-content-between align-items-center mb-3">
+            <h3 id="modal-titulo-pedidos" class="modal-title m-0 h5 fw-bold">🛍️ Resumen y Confirmación de Pedido</h3>
+            <button type="button" id="btn-cerrar-modal" class="btn-close" aria-label="Cerrar modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Desglose de productos -->
+            <div id="modal-resumen-items" class="resumen-items-box p-3 bg-light rounded mb-3"></div>
+
+            <div class="cart-total-row d-flex justify-content-between align-items-center mb-3">
+                <span class="fw-bold text-secondary">Total a pagar:</span>
+                <strong id="modal-total-amount" class="text-success h5 m-0">$0 COP</strong>
+            </div>
+
+            <hr class="my-3" />
+
+            <!-- Formulario de entrega con campos cifrados localmente -->
+            <form id="form-confirmar-despacho">
+                <div class="form-group mb-3 text-start">
+                    <label for="modal-telefono" class="form-label fw-semibold">📞 Número de Teléfono (Contacto):</label>
+                    <input type="tel" id="modal-telefono" class="form-control" placeholder="Ej. 3101234567" required />
+                    <small class="form-text text-muted">🔒 Se guardará cifrado localmente en tu dispositivo.</small>
+                </div>
+
+                <div class="form-group mb-3 text-start">
+                    <label for="modal-direccion" class="form-label fw-semibold">🏠 Dirección de Casa / Residencia:</label>
+                    <textarea id="modal-direccion" class="form-control" rows="2" placeholder="Ej. Calle 4 # 10-20 Barrio Centro" required></textarea>
+                    <small class="form-text text-muted">🔒 Cifrado mediante tu huella PGP local.</small>
+                </div>
+
+                <div class="modal-actions d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" id="btn-cancelar-modal" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" id="btn-enviar-pedido-modal" class="btn btn-success">
+                        🚀 Confirmar y Enviar Pedido
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

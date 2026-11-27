@@ -1,0 +1,64 @@
+<!-- Vista Perfil de Usuario, Identidad y Residencia - Chuya -->
+<section class="perfil-card container fade-in" aria-labelledby="perfil-title">
+    <div class="perfil-header text-center">
+        <h2 id="perfil-title">👤 Perfil de Miembro</h2>
+        <p>Datos de acceso, identidad PGP, billetera y residencia</p>
+    </div>
+
+    <!-- Opciones de Auto-completado mediante PDF / QR -->
+    <div class="importer-actions flex gap-2 justify-center mb-4">
+        <label for="input-pdf-file" class="btn-secondary text-sm">
+            📄 Importar Identidad PDF
+            <input type="file" id="input-pdf-file" accept="application/pdf" style="display: none;" />
+        </label>
+        <button type="button" id="btn-open-qr-scanner" class="btn-secondary text-sm">
+            📷 Escanear QR
+        </button>
+    </div>
+
+    <!-- Contenedor del Escáner QR (Oculto por defecto) -->
+    <div id="qr-reader-container" class="qr-container mb-4" style="display: none;"></div>
+
+    <form id="form-perfil" class="perfil-form">
+        <!-- 1. DATOS DE ACCESO E IDENTIDAD -->
+        <fieldset class="form-section">
+            <legend>🔑 Credenciales de Acceso e Identidad</legend>
+            
+            <div class="form-group">
+                <label for="perfil-nombre">Nombre de Miembro / Cliente:</label>
+                <input type="text" id="perfil-nombre" placeholder="Ej. Camila" required />
+            </div>
+
+            <div class="form-group">
+                <label for="perfil-nano">Dirección Nano (XNO):</label>
+                <input type="text" id="perfil-nano" placeholder="nano_1jco93p1..." required />
+            </div>
+
+            <div class="form-group">
+                <label for="perfil-pgp">Huella PGP (Fingerprint):</label>
+                <input type="text" id="perfil-pgp" placeholder="78CC586832CC4B31DFDA780201D4EB654D7D8026" required />
+            </div>
+        </fieldset>
+
+        <!-- 2. DATOS DE CONTACTO Y ENTREGA -->
+        <fieldset class="form-section mt-4">
+            <legend>🏡 Datos de Contacto y Residencia</legend>
+
+            <div class="form-group">
+                <label for="perfil-telefono">Número de Teléfono / WhatsApp:</label>
+                <input type="tel" id="perfil-telefono" placeholder="Ej. 3101234567" required />
+            </div>
+
+            <div class="form-group">
+                <label for="perfil-direccion">Dirección de la Casa / Entrega:</label>
+                <input type="text" id="perfil-direccion" placeholder="Ej. Calle 4 # 5-12, Barrio Centro" required />
+            </div>
+        </fieldset>
+
+        <div class="form-actions mt-4">
+            <button type="submit" id="btn-guardar-perfil" class="btn-primary w-full">
+                💾 Guardar y Firmar Datos en Dispositivo
+            </button>
+        </div>
+    </form>
+</section>

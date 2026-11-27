@@ -1,0 +1,51 @@
+{
+  "id": "./index.html",
+  "short_name": "Chuya Admin",
+  "name": "Chuya | Admin & Recolector",
+  "description": "PWA Operativa para la administración de perfiles, firmas y recolección de residuos de economía circular Chuya.",
+  "icons": [
+    {
+      "src": "../assets/icons/favicon.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../assets/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "scope": "./",
+  "background_color": "#f0fdf4",
+  "theme_color": "#0f766e",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "es-CO",
+  "dir": "ltr",
+  "categories": [
+    "business",
+    "utilities",
+    "productivity"
+  ]
+}

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuya | Generador Offline de Claves Públicas PGP</title>
+    <!-- Carga de la librería OpenPGP.js v5 -->
+    <script src="https://unpkg.com/openpgp@5.11.1/dist/openpgp.min.js"></script>
+    <style>
+        :root {
+            --primary: #0f766e;
+            --primary-hover: #115e59;
+            --bg-main: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --border-color: #cbd5e1;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        label { font-weight: 600; font-size: 0.95rem; }
+        input[type="number"], textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 1.2rem; flex-wrap: wrap; }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: var(--primary-hover); }
+        button.secondary { background-color: #64748b; }
+        button.secondary:hover { background-color: #475569; }
+        button:disabled { background-color: #94a3b8; cursor: not-allowed; }
+        .info-box {
+            background-color: #e0f2fe;
+            border-left: 4px solid #0284c7;
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 14px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.2s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔐 Generador de Pool de Claves PGP Públicas (Chuya)</h2>
+    
+    <div class="info-box">
+        💡 <strong>Esquema Centralizado PGP:</strong> Genera las claves públicas que se precargarán en la hoja <code>pool_pgp</code> o <code>Usuarios</code> en Google Sheets.
+    </div>
+
+    <div class="form-group">
+        <label for="input-cantidad">Cantidad de Claves PGP a Generar:</label>
+        <input type="number" id="input-cantidad" value="100" min="1" max="500" />
+    </div>
+
+    <div class="btn-group">
+        <button id="btn-generar" onclick="generarPoolPGP()">🚀 Generar Claves PGP</button>
+        <button onclick="copiarCSV()" class="secondary">📋 Copiar CSV</button>
+        <button onclick="descargarCSV()" class="secondary">💾 Descargar .CSV</button>
+    </div>
+
+    <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="resultado">Resultado CSV (Columna A = Indice, B = Fingerprint, C = PublicKey, D = Estado):</label>
+        <textarea id="resultado" rows="18" placeholder="Las claves públicas PGP generadas aparecerán aquí..." readonly></textarea>
+    </div>
+</div>
+
+<script>
+    console.log("[AveLibre::PGPGen] Módulo de generación PGP cargado.");
+
+    /**
+     * Extrae de forma segura el Fingerprint (Huella Digital) de la clave generada
+     */
+    async function obtenerFingerprintSeguro(pgpKeyObj, armorsPublicKey) {
+        try {
+            // 1. Intentar con el objeto de clave retornado
+            if (pgpKeyObj && typeof pgpKeyObj.getFingerprint === 'function') {
+                return pgpKeyObj.getFingerprint().toUpperCase();
+            }
+            // 2. Parsear el bloque de texto de la clave pública
+            if (armorsPublicKey && window.openpgp && typeof openpgp.readKey === 'function') {
+                const parsedKey = await openpgp.readKey({ armoredKey: armorsPublicKey });
+                if (parsedKey && typeof parsedKey.getFingerprint === 'function') {
+                    return parsedKey.getFingerprint().toUpperCase();
+                }
+            }
+        } catch (e) {
+            console.warn("[AveLibre::PGPGen] No se pudo obtener el fingerprint mediante método nativo:", e);
+        }
+        return "FINGERPRINT_AUTO_GEN";
+    }
+
+    async function generarPoolPGP() {
+        const cantidad = parseInt(document.getElementById("input-cantidad").value) || 100;
+        const btn = document.getElementById("btn-generar");
+        const progressBar = document.getElementById("progress-bar");
+        const progressFill = document.getElementById("progress-fill");
+        const txtResultado = document.getElementById("resultado");
+
+        if (typeof openpgp === 'undefined') {
+            console.error("[AveLibre::PGPGen] Error: Librería OpenPGP no encontrada.");
+            alert("Error: La librería OpenPGP.js no se ha cargado correctamente.");
+            return;
+        }
+
+        btn.disabled = true;
+        progressBar.style.display = "block";
+        progressFill.style.width = "0%";
+        txtResultado.value = "";
+
+        let csvContent = "indice,pgpFingerprint,pgpPublicKey,estado\n";
+        console.log(`[AveLibre::PGPGen] Iniciando generación de ${cantidad} claves PGP...`);
+
+        try {
+            for (let i = 0; i < cantidad; i++) {
+                // Generar par de claves ECC ed25519 (rápido y ligero)
+                const keyResult = await openpgp.generateKey({
+                    type: 'ecc',
+                    curve: 'ed25519',
+                    userIDs: [{ name: `Miembro ${i}`, email: `member${i}@avelibre.local` }],
+                    format: 'armored'
+                });
+
+                const publicKeyArmored = keyResult.publicKey;
+                
+                // Obtener Fingerprint defensivo
+                const keyObj = keyResult.key || keyResult;
+                const fingerprint = await obtenerFingerprintSeguro(keyObj, publicKeyArmored);
+
+                // Formatear clave pública para CSV (removiendo saltos de línea molestos)
+                const cleanPublicKey = `"${publicKeyArmored.replace(/\r?\n/g, "\\n")}"`;
+
+                csvContent += `${i},${fingerprint},${cleanPublicKey},DISPONIBLE\n`;
+
+                // Actualizar barra de progreso
+                const porcentaje = Math.round(((i + 1) / cantidad) * 100);
+                progressFill.style.width = `${porcentaje}%`;
+
+                // Ceder tiempo de CPU cada 3 iteraciones para no bloquear la interfaz
+                if (i % 3 === 0) {
+                    await new Promise(r => setTimeout(r, 5));
+                }
+            }
+
+            txtResultado.value = csvContent;
+            console.log(`[AveLibre::PGPGen] ✅ ¡${cantidad} Claves PGP generadas con éxito!`);
+            alert(`✅ Se han generado ${cantidad} claves públicas PGP exitosamente.`);
+
+        } catch (err) {
+            console.error("[AveLibre::PGPGen] Error durante la generación PGP:", err);
+            alert("❌ Error durante la generación PGP: " + err.message);
+        } finally {
+            btn.disabled = false;
+            progressBar.style.display = "none";
+        }
+    }
+
+    function copiarCSV() {
+        const txt = document.getElementById("resultado");
+        if (!txt.value) {
+            alert("Primero debes generar las claves PGP.");
+            return;
+        }
+        navigator.clipboard.writeText(txt.value).then(() => {
+            alert("📋 CSV copiado al portapapeles.");
+        });
+    }
+
+    function descargarCSV() {
+        const txt = document.getElementById("resultado").value;
+        if (!txt) {
+            alert("Primero debes generar las claves PGP.");
+            return;
+        }
+        const blob = new Blob([txt], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "pool_claves_pgp.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
+
+</body>
+</html>

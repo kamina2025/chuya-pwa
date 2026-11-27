@@ -1,0 +1,45 @@
+<!-- Vista Portal de Inicio / Ingreso de Cliente - Chuya -->
+<section class="login-card container fade-in" aria-labelledby="login-title">
+    <div class="login-header text-center">
+        <h2 id="login-title">🦅 Portal Chuya</h2>
+        <p class="login-subtitle">Red de Economía Circular & Autogestión Local-First</p>
+    </div>
+
+    <!-- Opciones de Auto-Importación de Identidad -->
+    <div class="import-actions text-center">
+        <label for="input-pdf-file" class="btn-import-pdf">
+            📄 Importar Identidad (PDF)
+        </label>
+        <input type="file" id="input-pdf-file" accept="application/pdf" class="hidden-file-input" />
+
+        <button type="button" id="btn-open-qr-scanner" class="btn-scan-qr">
+            📷 Escanear QR
+        </button>
+    </div>
+
+    <!-- Visor de la Cámara para el Escáner QR -->
+    <div id="qr-reader-container" class="qr-scanner-box"></div>
+
+    <form id="form-login" class="login-form">
+        <div class="form-group">
+            <label for="login-nombre">Nombre de Miembro / Cliente:</label>
+            <input type="text" id="login-nombre" placeholder="Ej. camila" required autocomplete="username" />
+        </div>
+
+        <div class="form-group">
+            <label for="login-nano">Dirección Nano (XNO):</label>
+            <input type="text" id="login-nano" placeholder="nano_1jco93p1..." required />
+        </div>
+
+        <div class="form-group">
+            <label for="login-pgp">Huella PGP (Fingerprint):</label>
+            <input type="text" id="login-pgp" placeholder="78CC586832CC4831DFDA780201D4EB654D7D8026" required />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" id="btn-iniciar-sesion" class="btn-primary-solarpunk">
+                🔑 Ingresar y Firmar Dispositivo
+            </button>
+        </div>
+    </form>
+</section>

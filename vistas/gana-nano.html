@@ -1,0 +1,92 @@
+<!-- Vista de Metas de Economía Circular y Recompensas Nano -->
+<section class="gamification-section" aria-labelledby="meta-titulo">
+    <div class="section-header">
+        <h2 id="meta-titulo">🌱 Tus Metas de Economía Circular</h2>
+        <p class="section-subtitle">
+            Aporta insumos orgánicos a la granja, acumula puntos y redime descuentos en tus pedidos.
+        </p>
+        <button type="button" id="btn-refrescar-metas" class="btn-secondary-action btn-sm">🔄 Actualizar Metas</button>
+    </div>
+
+    <!-- Recompensa General Acumulada -->
+    <div class="recompensa-box highlight-card" id="recompensa-summary">
+        <div class="recompensa-header">
+            <span class="reward-icon">🎉</span>
+            <div>
+                <h4>Recompensas Disponibles</h4>
+                <p id="recompensa-texto">
+                    Entrega tus cáscaras de huevo y bultos de aserrín para acumular descuentos en tus pedidos.
+                </p>
+            </div>
+        </div>
+        <button type="button" id="btn-redimir-descuento" class="btn-primary-action">Aplicar Descuento a Pedido</button>
+    </div>
+
+    <!-- Grilla de Metas -->
+    <div class="metas-grid">
+        <!-- Meta 1: Cáscara de Huevo (Calcio) -->
+        <article class="meta-card" id="card-meta-cascaras">
+            <div class="meta-icon">🥚</div>
+            <div class="meta-details">
+                <h3>Cáscaras de Huevo (Calcio)</h3>
+                <p class="meta-desc">
+                    Entrega cáscaras secas para suplementar la alimentación de nuestras aves y enriquecer el suelo.
+                </p>
+
+                <div class="progress-bar-container">
+                    <div class="progress-labels">
+                        <label for="cascaras">Entregas este mes:</label>
+                        <span id="cascaras-num" class="progress-badge">0 / 30 Unid.</span>
+                    </div>
+                    <progress id="cascaras" value="0" max="30"></progress>
+                </div>
+            </div>
+        </article>
+
+        <!-- Meta 2: Aserrín (Bulto o Fracción) -->
+        <article class="meta-card" id="card-meta-aserrin">
+            <div class="meta-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
+                    <!-- Tronco trasero -->
+                    <path d="M4 14h6c.6 0 1-.4 1-1V9c0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1v4c0 .6.4 1 1 1z" fill="#a05a2c" />
+                    <ellipse cx="4" cy="11" rx="1" ry="2" fill="#d7ccc8" />
+
+                    <!-- Tronco principal -->
+                    <path d="M8 18h8c.6 0 1-.4 1-1v-4c0-.6-.4-1-1-1H8c-.6 0-1 .4-1 1v4c0 .6.4 1 1 1z" fill="#8d6e63" />
+                    <ellipse cx="8" cy="15" rx="1" ry="2" fill="#d7ccc8" />
+
+                    <!-- Montón de Aserrín -->
+                    <path d="M2 20c1-2 3-3 5-3s3.5 1 5 1 3-2 5-2 3.5 2 5 4H2z" fill="#d7ccc8" />
+
+                    <!-- Detalle / Sombras del aserrín -->
+                    <path
+                        d="M5 19c2 0 3-1 5-1s2 1 4 1 3-.5 4-1"
+                        stroke="#bcaaa4"
+                        stroke-width="1"
+                        stroke-linecap="round"
+                        fill="none" />
+
+                    <!-- Virutas sueltas flotando -->
+                    <circle cx="6" cy="14" r="0.7" fill="#bcaaa4" />
+                    <circle cx="15" cy="11" r="0.5" fill="#8d6e63" />
+                    <circle cx="18" cy="13" r="0.7" fill="#bcaaa4" />
+                </svg>
+            </div>
+            <div class="meta-details">
+                <h3>Aserrín de Madera (Camas)</h3>
+                <p class="meta-desc">
+                    Aporta aserrín seco (bultos enteros o fracciones) para mantener secas y sanas las camas del
+                    gallinero.
+                </p>
+
+                <div class="progress-bar-container">
+                    <div class="progress-labels">
+                        <label for="aserrin">Bultos / Fracciones entregadas:</label>
+                        <span id="aserrin-num" class="progress-badge">0 / 3 Bultos</span>
+                    </div>
+                    <progress id="aserrin" value="0" max="3" step="0.25"></progress>
+                </div>
+            </div>
+        </article>
+    </div>
+</section>

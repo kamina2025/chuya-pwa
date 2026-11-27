@@ -1,0 +1,169 @@
+/**
+ * Chuya - Estilos del Perfil de Usuario y Residencia
+ * Stack: CSS3 Vanilla / Mobile-First
+ */
+
+.perfil-card {
+  background: var(--sp-bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--sp-card-border);
+  border-radius: var(--sp-radius-card);
+  padding: 1.75rem 1.5rem;
+  box-shadow: var(--sp-box-shadow);
+  position: relative;
+  overflow: hidden;
+  transition: var(--sp-transition);
+}
+
+.perfil-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--sp-leaf-green), var(--sp-solar-gold));
+}
+
+.perfil-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--sp-leaf-green-dark);
+  margin-bottom: 0.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .perfil-header h2 {
+    color: var(--sp-leaf-green);
+  }
+}
+
+.perfil-header p {
+  font-size: 0.9rem;
+  color: var(--sp-text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.perfil-form .form-section {
+  border: 1px dashed rgba(16, 185, 129, 0.3);
+  border-radius: 14px;
+  padding: 1.25rem;
+  background: rgba(16, 185, 129, 0.03);
+}
+
+.perfil-form legend {
+  font-size: 0.925rem;
+  font-weight: 700;
+  color: var(--sp-leaf-green-dark);
+  padding: 0 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .perfil-form legend {
+    color: var(--sp-leaf-green);
+  }
+}
+
+.perfil-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+}
+
+.perfil-form .form-group:first-of-type {
+  margin-top: 0.4rem;
+}
+
+.perfil-form label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sp-text-main);
+}
+
+.perfil-form input[type="text"],
+.perfil-form input[type="tel"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--sp-card-border);
+  background: var(--sp-bg-canvas);
+  color: var(--sp-text-main);
+  font-family: var(--sp-font-family);
+  font-size: 0.9rem;
+  outline: none;
+  transition: var(--sp-transition);
+}
+
+.perfil-form input:focus {
+  border-color: var(--sp-solar-gold);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.importer-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.btn-secondary {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--sp-leaf-green-dark);
+  border: 1px solid var(--sp-card-border);
+  padding: 0.6rem 1rem;
+  border-radius: var(--sp-radius-pill);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--sp-transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-secondary {
+    color: var(--sp-leaf-green);
+  }
+}
+
+.btn-secondary:hover {
+  background: rgba(16, 185, 129, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--sp-leaf-green) 0%, var(--sp-leaf-green-dark) 100%);
+  color: #ffffff;
+  font-family: var(--sp-font-family);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.85rem 1.25rem;
+  border: none;
+  border-radius: var(--sp-radius-pill);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transition: var(--sp-transition);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--sp-solar-gold) 0%, var(--sp-solar-amber) 100%);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.qr-container {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto 1.25rem auto;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px dashed var(--sp-solar-gold);
+  background: #000;
+}

@@ -1,0 +1,84 @@
+(function diagnosticarBugImpresion() {
+    console.group("🔎 [AveLibre::Debug] Diagnóstico de Hoja en Blanco al Imprimir");
+
+    const receipt = document.getElementById("thermal-receipt");
+    if (!receipt) {
+        console.error("❌ ERROR CRÍTICO: El elemento '#thermal-receipt' NO existe en el DOM.");
+        console.groupEnd();
+        return;
+    }
+
+    console.log("✅ Elemento #thermal-receipt localizado en el DOM.");
+
+    // 1. Recorrido de la cadena de contenedores padres
+    let current = receipt;
+    const parentChain = [];
+    while (current && current !== document.body) {
+        parentChain.push(current);
+        current = current.parentElement;
+    }
+    parentChain.push(document.body);
+    parentChain.push(document.documentElement);
+
+    console.log("\n📐 --- CADENA DE CONTENEDORES PADRES ---");
+    const reportData = parentChain.map(el => {
+        const style = window.getComputedStyle(el);
+        return {
+            Etiqueta: el.tagName.toLowerCase(),
+            ID: el.id ? `#${el.id}` : "(sin id)",
+            Clases: el.className ? `.${String(el.className).trim().replace(/\s+/g, '.')}` : "(sin clase)",
+            Display: style.display,
+            Visibility: style.visibility,
+            Height: style.height,
+            Overflow: style.overflow
+        };
+    });
+    console.table(reportData);
+
+    // 2. Identificación de colapso de alto o visibilidad
+    const bloqueados = reportData.filter(r => r.Display === "none" || r.Visibility === "hidden" || r.Height === "0px");
+    if (bloqueados.length > 0) {
+        console.warn("⚠️ CONTENEDORES OCLUSORES DETECTADOS:", bloqueados);
+    } else {
+        console.log("✅ Ningún contenedor padre tiene display:none o height:0px en pantalla.");
+    }
+
+    // 3. Inspección del código QR dinámico
+    const qrContainer = document.getElementById("receipt-qr-code");
+    const qrCanvas = qrContainer ? qrContainer.querySelector("canvas") : null;
+    const qrImg = qrContainer ? qrContainer.querySelector("img") : null;
+    console.log("\n🏁 --- INSPECCIÓN DE CÓDIGO QR ---");
+    console.log("Contenedor #receipt-qr-code:", qrContainer ? "✅ Presente" : "❌ Ausente");
+    console.log("Nodo <canvas>:", qrCanvas ? `Ancho: ${qrCanvas.width}px | Alto: ${qrCanvas.height}px` : "⚠️ Sin canvas");
+    console.log("Nodo <img>:", qrImg ? `Src cargado (${qrImg.src.length} bytes)` : "⚠️ Sin tag img");
+
+    // 4. Extracción de Hojas de Estilo con reglas @media print
+    console.log("\n📜 --- HOJAS DE ESTILO CON REGLAS @media print ---");
+    const printRules = [];
+    Array.from(document.styleSheets).forEach(sheet => {
+        try {
+            const rules = Array.from(sheet.cssRules || []);
+            rules.forEach(rule => {
+                if (rule.type === CSSRule.MEDIA_RULE && rule.conditionText.includes("print")) {
+                    Array.from(rule.cssRules).forEach(subRule => {
+                        printRules.push({
+                            ArchivoCSS: sheet.href ? sheet.href.split('/').pop() : "Inline/StyleTag",
+                            Selector: subRule.selectorText,
+                            Regla: subRule.style.cssText
+                        });
+                    });
+                }
+            });
+        } catch (e) {
+            // Ignorar hojas protegidas por CORS si las hay
+        }
+    });
+
+    if (printRules.length === 0) {
+        console.error("❌ NO se encontraron reglas @media print activas en las hojas de estilo del documento.");
+    } else {
+        console.table(printRules);
+    }
+
+    console.groupEnd();
+})();

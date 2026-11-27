@@ -1,0 +1,117 @@
+<section id="sec-registrar-miembro" class="card tab-content active">
+    <h3>👤 Registrar Nuevo Miembro</h3>
+    
+    <form id="form-registrar-miembro">
+        <!-- 1. Nombre Completo -->
+        <div class="form-group">
+            <label for="nuevo-nombre">Nombre Completo:</label>
+            <input 
+                type="text" 
+                id="nuevo-nombre" 
+                placeholder="Ej. María Pérez" 
+                autocomplete="name"
+                required 
+            />
+        </div>
+
+        <!-- 2. Teléfono / WhatsApp -->
+        <div class="form-group">
+            <label for="nuevo-telefono">Teléfono / WhatsApp:</label>
+            <input 
+                type="tel" 
+                id="nuevo-telefono" 
+                placeholder="Ej. +57 300 123 4567" 
+                autocomplete="tel"
+                inputmode="tel"
+                required 
+            />
+        </div>
+
+        <!-- 3. Dirección de Residencia / Ubicación -->
+        <div class="form-group">
+            <label for="nuevo-direccion">Dirección / Ubicación:</label>
+            <input 
+                type="text" 
+                id="nuevo-direccion" 
+                placeholder="Ej. Vereda La Vega, Finca El Paraíso" 
+                autocomplete="street-address"
+                required 
+            />
+        </div>
+
+        <!-- 4. Rol Asignado -->
+        <div class="form-group">
+            <label for="nuevo-rol">Rol Asignado:</label>
+            <select id="nuevo-rol">
+                <option value="CLIENTE">Cliente</option>
+                <option value="RECOLECTOR">Recolector / Operador</option>
+                <option value="ADMIN">Administrador</option>
+            </select>
+        </div>
+
+        <!-- 5. Clave Pública PGP (Opcional / Auto-asignada) -->
+        <div class="form-group">
+            <label for="nuevo-pgp">Clave Pública PGP (opcional / auto-generada):</label>
+            <textarea 
+                id="nuevo-pgp" 
+                rows="3" 
+                placeholder="-----BEGIN PGP PUBLIC KEY BLOCK----- (Dejar en blanco para asignar del pool_pgp)"
+            ></textarea>
+        </div>
+
+        <!-- 6. Dirección Nano (Auto-asignada desde Pool) -->
+        <div class="form-group">
+            <label for="nuevo-nano-address">Dirección Nano (XNO):</label>
+            <input 
+                type="text" 
+                id="nuevo-nano-address" 
+                placeholder="Dejar en blanco para auto-asignar del pool_direcciones" 
+            />
+            <small class="help-text">Si se deja vacío, el backend asignará determinísticamente la siguiente dirección disponible.</small>
+        </div>
+
+        <button type="submit" id="btn-guardar-miembro" class="btn-submit">
+            ➕ Registrar Miembro y Generar QR
+        </button>
+    </form>
+
+    <!-- Tarjeta Resultante con Código QR y Credencial Pública para el Miembro -->
+    <!-- Tarjeta Resultante con Formato de Tirilla Solarpunk (80mm) -->
+<div id="resultado-registro-qr" class="card-qr-result hidden" style="display: none;">
+    <div class="ticket-header" style="text-align: center; border-bottom: 2px dashed #0f766e; padding-bottom: 6px; margin-bottom: 6px;">
+        <h4 style="color: #0f766e; margin: 0; font-size: 15px; text-transform: uppercase;">🐓 AVESLIBRES</h4>
+        <small style="color: #d97706; font-weight: bold; font-size: 9px;">🌱 Red de Economía Circular & Autogestión</small>
+    </div>
+
+    <div id="qrcode-box" class="qr-box" style="text-align: center; margin: 6px 0;"></div>
+
+    <div class="qr-details" style="background: #f0fdf4; border: 1px solid #0f766e; border-radius: 6px; padding: 6px; font-size: 10px;">
+        <p style="margin: 2px 0;"><strong>Miembro:</strong> <span id="qr-res-nombre">-</span></p>
+        <p style="margin: 2px 0;"><strong>Dirección Nano (XNO):</strong> <br><code id="qr-nano-address" style="font-size: 9px; word-break: break-all;">-</code></p>
+        <p style="margin: 2px 0;"><strong>Identidad PGP:</strong> <br><small id="qr-pgp-fingerprint" style="font-size: 8.5px; word-break: break-all;">-</small></p>
+    </div>
+
+    <!-- Instructivo e Invitación a Recompensas -->
+    <div style="border: 1px solid #f59e0b; background-color: #fffbeb; border-radius: 6px; padding: 6px; margin-top: 6px; text-align: center;">
+        <strong style="color: #b45309; font-size: 9.5px; display: block;">🥚 ¡ENTREGA INSUMOS Y GANA RECOMPENSAS!</strong>
+        <p style="font-size: 8.5px; color: #78350f; margin: 3px 0; text-align: justify;">
+            Presenta este QR al recolector al entregar cáscaras de huevo o aserrín. Acumula saldo XNO para canjear por productos avícolas y abono orgánico.
+        </p>
+    </div>
+
+    <!-- URL de la PWA -->
+    <div style="margin-top: 6px; text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 4px;">
+        <small style="font-size: 8px; color: #0f766e; display: block; font-weight: bold;">Accede a tu PWA:</small>
+        <code style="font-size: 8.5px; color: #0f766e; word-break: break-all;">http://localhost/aves-libres/index.html#inicio</code>
+    </div>
+
+    <div style="margin-top: 10px; display: flex; gap: 6px; flex-direction: column;">
+        <button type="button" id="btn-imprimir-qr" class="btn-submit btn-secondary">
+            🖨️ Imprimir Tirilla / Credencial
+        </button>
+        <button type="button" id="btn-nuevo-registro" class="btn-link" onclick="document.getElementById('resultado-registro-qr').style.display='none'">
+            ➕ Registrar Otro Miembro
+        </button>
+    </div>
+</div>
+</section>

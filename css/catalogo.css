@@ -1,0 +1,246 @@
+/**
+ * Chuya - Estilos del Catálogo de Productos y Filtros
+ * Stack: CSS3 Vanilla / Mobile-First
+ */
+
+.catalogo-section {
+  padding: 1rem 0;
+}
+
+.catalogo-header {
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+.catalogo-header h2 {
+  font-size: 1.4rem;
+  color: var(--sp-leaf-green-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  .catalogo-header h2 {
+    color: var(--sp-leaf-green);
+  }
+}
+
+.catalogo-subtitle {
+  font-size: 0.875rem;
+  color: var(--sp-text-muted);
+}
+
+/* Filtros por Chip */
+.categories-filter {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.25rem;
+  scrollbar-width: none;
+}
+
+.categories-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  background: var(--sp-bg-card);
+  border: 1px solid var(--sp-card-border);
+  color: var(--sp-text-main);
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--sp-radius-pill);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--sp-transition);
+}
+
+.filter-chip.active,
+.filter-chip:hover {
+  background: var(--sp-leaf-green);
+  color: #ffffff;
+  border-color: var(--sp-leaf-green-dark);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Rejilla y Tarjetas de Productos */
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.product-card {
+  background: var(--sp-bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--sp-card-border);
+  border-radius: var(--sp-radius-card);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--sp-box-shadow);
+  transition: var(--sp-transition);
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--sp-leaf-green);
+}
+
+.product-badge {
+  font-size: 2.25rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.product-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sp-text-main);
+  margin-bottom: 0.25rem;
+}
+
+.product-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--sp-solar-amber);
+  margin-bottom: 1rem;
+}
+
+.btn-add-order {
+  width: 100%;
+  background: linear-gradient(135deg, var(--sp-leaf-green), var(--sp-leaf-green-dark));
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem;
+  border-radius: var(--sp-radius-pill);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--sp-transition);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.btn-add-order:hover {
+  background: linear-gradient(135deg, var(--sp-solar-gold), var(--sp-solar-amber));
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+}
+
+/* Indicadores de Stock e Inventario Variable */
+.product-badge-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.stock-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--sp-radius-pill, 12px);
+}
+
+.stock-ok {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.stock-low {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.stock-out {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.product-description {
+  font-size: 0.8rem;
+  color: var(--sp-text-muted, #6b7280);
+  margin-bottom: 0.5rem;
+}
+
+.product-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.input-qty {
+  width: 50px;
+  padding: 0.3rem;
+  border-radius: 6px;
+  border: 1px solid var(--sp-card-border, #ccc);
+  text-align: center;
+}
+
+/* Botón de Actualización de Disponibilidad */
+.btn-refresh-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding: 0.45rem 1rem;
+  background: var(--sp-bg-card);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--sp-card-border);
+  border-radius: var(--sp-radius-pill);
+  color: var(--sp-leaf-green-dark);
+  font-family: var(--sp-font-family);
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
+  transition: var(--sp-transition);
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-refresh-sm {
+    color: var(--sp-leaf-green);
+    background: rgba(20, 31, 27, 0.95);
+  }
+}
+
+.btn-refresh-sm:hover {
+  background: linear-gradient(135deg, var(--sp-leaf-green), var(--sp-leaf-green-dark));
+  color: #ffffff;
+  border-color: var(--sp-leaf-green-dark);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-refresh-sm:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-refresh-sm:focus-visible {
+  outline: 2px solid var(--sp-solar-gold);
+  outline-offset: 2px;
+}
+
+.btn-refresh-sm:hover span,
+.btn-refresh-sm.loading span {
+  display: inline-block;
+  animation: spin 0.8s ease-in-out infinite;
+}
+
+.meta-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

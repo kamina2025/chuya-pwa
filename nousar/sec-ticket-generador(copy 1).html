@@ -1,0 +1,148 @@
+<section id="sec-ticket-generador" class="card tab-content">
+    <div class="ticket-app-grid">
+        <!-- Panel de Configuración e Ingreso de Datos (Oculto en Impresión) -->
+        <div class="ticket-controls-panel no-print">
+            <h3>🧾 Generador de Ticket Promocional</h3>
+            
+            <div class="preset-box">
+                <span>Cargar comprobante de prueba:</span>
+                <button type="button" id="btn-load-preset-pse" class="btn-secondary btn-sm">
+                    ⚡ Usar Recibo Daviplata PSE ($20.400 COP)
+                </button>
+            </div>
+
+            <!-- Zona de Carga de Archivos / Simulación OCR -->
+            <div id="dropzone-pdf" class="dropzone-container" role="button" tabindex="0" aria-label="Subir comprobante de pago en PDF o Imagen">
+                <input type="file" id="pdf-file-input" accept="application/pdf,image/*" hidden />
+                <div class="dropzone-content">
+                    <span class="dropzone-icon" aria-hidden="true">📄</span>
+                    <p>Arrastra o haz clic para subir el <strong>Comprobante PDF / Imagen</strong></p>
+                    <small>Soporta Daviplata, Nequi, PSE y Facturas de Servicios Públicos</small>
+                </div>
+            </div>
+
+            <form id="form-ticket-datos" class="margin-top" autocomplete="off">
+                <h4>Datos de la Transacción</h4>
+                <div class="form-group">
+                    <label for="ticket-empresa">Empresa / Destino de Pago:</label>
+                    <input 
+                        type="text" 
+                        id="ticket-empresa" 
+                        placeholder="Ej. EMPRESAS MUNICIPALES DE MIRANDA" 
+                        required 
+                    />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ticket-monto">Valor Pagado (COP):</label>
+                        <input 
+                            type="number" 
+                            id="ticket-monto" 
+                            placeholder="20400" 
+                            min="0" 
+                            step="any" 
+                            inputmode="numeric" 
+                            required 
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="ticket-cus">Código CUS / Aprobación:</label>
+                        <input 
+                            type="text" 
+                            id="ticket-cus" 
+                            placeholder="804875072" 
+                            required 
+                        />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ticket-motivo">Motivo / Referencia:</label>
+                    <input 
+                        type="text" 
+                        id="ticket-motivo" 
+                        placeholder="Pago Ref: 1170569_1793910079_4390" 
+                        required 
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="ticket-fecha">Fecha y Hora:</label>
+                    <input 
+                        type="text" 
+                        id="ticket-fecha" 
+                        placeholder="Noviembre 05 de 2026 - 03:24 pm" 
+                        required 
+                    />
+                </div>
+
+                <h4>Promoción y Economía Circular</h4>
+                <div class="form-group">
+                    <label for="ticket-recompensa">Recompensa Asignada:</label>
+                    <select id="ticket-recompensa">
+                        <option value="XNO">🪙 0.05 Nano (XNO) al traer cáscaras de huevo / aserrín</option>
+                        <option value="HUEVOS">🥚 10% Descuento en Huevos Orgánicos de la Tienda</option>
+                        <option value="SERVICIO">⚡ 5% Recarga Gratis en la próxima transacción</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ticket-nano-user">Dirección Nano / PGP Miembro (Opcional):</label>
+                    <input 
+                        type="text" 
+                        id="ticket-nano-user" 
+                        placeholder="nano_3... o Fingerprint PGP" 
+                    />
+                </div>
+
+                <button type="button" id="btn-imprimir-ticket-pos" class="btn-submit margin-top">
+                    🖨️ Imprimir Ticket (80mm POS)
+                </button>
+            </form>
+        </div>
+
+        <!-- Vista Previa del Ticket Térmico POS (80mm) -->
+        <div class="ticket-preview-panel">
+            <h4 class="no-print">Vista Previa (Impresora Térmica 80mm)</h4>
+            <div id="thermal-receipt" class="pos-receipt">
+                <div class="pos-header">
+                    <h2>🐓 Chuya</h2>
+                    <p class="pos-subtitle">Recargas Solarpunk & Economía Circular</p>
+                    <p class="pos-branch">Miranda, Cauca, Colombia</p>
+                    <hr class="pos-divider-double" />
+                </div>
+
+                <div class="pos-body">
+                    <p class="pos-title">COMPROBANTE DE PAGO & PROMOCIÓN</p>
+                    <div class="pos-line"><span>Destino:</span> <strong id="lbl-rec-empresa">EMPRESAS MUNICIPALES DE MIRANDA</strong></div>
+                    <div class="pos-line"><span>Fecha:</span> <span id="lbl-rec-fecha">05/11/2026 03:24 PM</span></div>
+                    <div class="pos-line"><span>CUS:</span> <span id="lbl-rec-cus">804875072</span></div>
+                    <div class="pos-line"><span>Motivo:</span> <span id="lbl-rec-motivo">Ref: 1170569_...</span></div>
+                    <hr class="pos-divider" />
+                    <div class="pos-line pos-total"><span>VALOR RECIBIDO:</span> <strong id="lbl-rec-monto">$20.400 COP</strong></div>
+                    <hr class="pos-divider-double" />
+
+                    <!-- Sección Promocional -->
+                    <div class="pos-promo-section">
+                        <p class="promo-head">🎁 INSTRUCCIONES & RECOMPENSA</p>
+                        <p class="promo-text">Trae tus cáscaras de huevo o aserrín seco a nuestra tienda y reclama:</p>
+                        <div class="promo-badge" id="lbl-rec-recompensa">🪙 0.05 Nano (XNO) o Descuento Avícola</div>
+                        <p class="promo-sub">¡Construyamos economía sustentable en Miranda!</p>
+                    </div>
+
+                    <div class="pos-qr-box">
+                        <div id="receipt-qr-code"></div>
+                        <small id="lbl-rec-nano-user">nano_3... / PGP Verified</small>
+                    </div>
+                </div>
+
+                <div class="pos-footer">
+                    <hr class="pos-divider" />
+                    <p>Gracias por apoyar el comercio local sustentable</p>
+                    <p class="pos-hash">Hash: <span id="lbl-rec-hash">a8f9...2026</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
