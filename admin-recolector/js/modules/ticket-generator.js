@@ -40,7 +40,8 @@ export const TicketGeneratorModule = {
         if (btnPrint) {
             btnPrint.addEventListener("click", () => {
                 console.log("[Chuya::TicketGenerator] Preparando impresión térmica POS 80mm...");
-                document.title = "Chuya | Comprobante POS";
+                const datos = this.obtenerDatosTicketActual();
+                document.title = `Chuya_Comprobante_${datos.cus}`;
                 this.actualizarVistaPrevia();
                 setTimeout(() => {
                     window.print();
@@ -134,17 +135,31 @@ export const TicketGeneratorModule = {
     },
 
     /**
-     * Limpia emojis usando propiedades Unicode nativas (ES2018+) para compatibilidad QR y jsPDF
+     * Limpia emojis, símbolos no soportados por fuentes estándar de jsPDF (evita el glifo '☐')
+     * y normaliza espacios manteniendo caracteres españoles (á, é, í, ó, ú, ñ, ¿, ¡)
      */
     _limpiarTexto(str = "") {
-        try {
-            return String(str).replace(/\p{Extended_Pictographic}/gu, "").replace(/\s+/g, " ").trim();
-        } catch (e) {
-            return String(str)
-                .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "")
-                .replace(/\s+/g, " ")
-                .trim();
+        return String(str)
+            .replace(/[\u{1F000}-\u{1FAFF}]/gu, "")
+            .replace(/[\u{2600}-\u{27BF}]/gu, "")
+            .replace(/[\uFE0E\uFE0F\u200D]/gu, "")
+            .replace(/[^\x20-\x7E\xA0-\xFF]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+    },
+
+    /**
+     * Formatea el identificador del cliente para vista previa sin romper el prefijo nano_
+     */
+    _formatearClientePreview(valor = "") {
+        const limpio = String(valor || "").trim();
+        if (!limpio) return "Cliente General";
+
+        if (/^(nano|xrb)_[13][13-9a-km-uw-z]{59}$/i.test(limpio)) {
+            return `${limpio.slice(0, 12)}...${limpio.slice(-6)}`;
         }
+
+        return limpio.length > 34 ? `${limpio.slice(0, 31)}...` : limpio;
     },
 
     /**
@@ -169,11 +184,15 @@ export const TicketGeneratorModule = {
         const recompensaEl = document.getElementById("ticket-recompensa");
         const recompensaVal = recompensaEl?.value || "XNO";
         const selectedOption = recompensaEl?.selectedOptions?.[0];
-        const recompensaTexto = selectedOption?.dataset?.badge || selectedOption?.text || "0.05 Nano (XNO) al traer cáscaras de huevo / aserrín";
+        const recompensaTexto =
+            selectedOption?.dataset?.badge ||
+            selectedOption?.text ||
+            "0.05 Nano (XNO) al traer cáscaras de huevo / aserrín";
         const nanoUser = document.getElementById("ticket-nano-user")?.value.trim() || "Cliente General";
 
-        if (!this._hashTicketActual || !this._hashTicketActual.startsWith(`CUS-${cus}-`)) {
-            this._hashTicketActual = `CUS-${cus}-${Date.now().toString(36)}`;
+        const prefijoEsperado = `CUS-${cus}-`;
+        if (!this._hashTicketActual || !this._hashTicketActual.startsWith(prefijoEsperado)) {
+            this._hashTicketActual = `${prefijoEsperado}${Date.now().toString(36)}`;
         }
 
         return {
@@ -202,10 +221,7 @@ export const TicketGeneratorModule = {
         this._setElementText("lbl-rec-motivo", datos.motivo);
         this._setElementText("lbl-rec-fecha", datos.fecha);
         this._setElementText("lbl-rec-recompensa", datos.recompensaTexto);
-        this._setElementText(
-            "lbl-rec-nano-user",
-            datos.nanoUser.length > 26 ? `${datos.nanoUser.substring(0, 24)}...` : datos.nanoUser
-        );
+        this._setElementText("lbl-rec-nano-user", this._formatearClientePreview(datos.nanoUser));
         this._setElementText("lbl-rec-hash", datos.hash);
 
         const payloadCompacto = {
@@ -213,7 +229,8 @@ export const TicketGeneratorModule = {
             cus: datos.cus,
             v: datos.montoNum,
             r: datos.recompensaVal,
-            u: this._limpiarTexto(datos.nanoUser)
+            u: this._limpiarTexto(this._formatearClientePreview(datos.nanoUser)),
+            h: datos.hash
         };
 
         this.renderQrTicket(payloadCompacto);
@@ -228,14 +245,14 @@ export const TicketGeneratorModule = {
 
         if (window.AdminComprobantePDF && typeof window.AdminComprobantePDF.generarComprobante === "function") {
             window.AdminComprobantePDF.generarComprobante({
-                destino: datos.empresa,
-                fecha: datos.fecha,
-                cus: datos.cus,
-                motivo: datos.motivo,
+                destino: this._limpiarTexto(datos.empresa),
+                fecha: this._limpiarTexto(datos.fecha),
+                cus: this._limpiarTexto(datos.cus),
+                motivo: this._limpiarTexto(datos.motivo),
                 valorCOP: datos.montoNum,
                 recompensaXNO: this._limpiarTexto(datos.recompensaTexto),
-                cliente: datos.nanoUser,
-                hash: datos.hash
+                cliente: this._limpiarTexto(datos.nanoUser),
+                hash: this._limpiarTexto(datos.hash)
             });
             return;
         }
@@ -251,7 +268,7 @@ export const TicketGeneratorModule = {
         const doc = new JsPDFConstructor({
             orientation: "portrait",
             unit: "mm",
-            format: [105, 195]
+            format: [105, 215]
         });
 
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -260,10 +277,13 @@ export const TicketGeneratorModule = {
         let cursorY = 12;
 
         const drawCentered = (text, size, style = "normal", color = [17, 24, 39], gap = 2) => {
+            const textoLimpio = this._limpiarTexto(text);
+            if (!textoLimpio) return;
+
             doc.setFont("helvetica", style);
             doc.setFontSize(size);
             doc.setTextColor(...color);
-            const lines = doc.splitTextToSize(this._limpiarTexto(text), contentWidth);
+            const lines = doc.splitTextToSize(textoLimpio, contentWidth);
             doc.text(lines, pageWidth / 2, cursorY, { align: "center" });
             cursorY += lines.length * (size * 0.42) + gap;
         };
@@ -324,7 +344,7 @@ export const TicketGeneratorModule = {
         drawCentered("Gracias por apoyar el comercio local sustentable", 8, "normal", [75, 85, 99], 2);
         drawCentered(`Hash: ${datos.hash}`, 7.5, "bold", [107, 114, 128], 2);
 
-        const fileName = `Chuya_Comprobante_${datos.cus}.pdf`;
+        const fileName = `Chuya_Comprobante_${this._limpiarTexto(datos.cus)}.pdf`;
         doc.save(fileName);
         console.log("[Chuya::TicketGenerator] Comprobante PDF guardado exitosamente:", { fileName, cursorY });
 

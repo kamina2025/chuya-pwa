@@ -11,6 +11,7 @@ const HTML5_QRCODE_CDN = "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.
 export const QRPDFImporter = {
     _loadingPromise: null,
     _activeScanner: null,
+    _cleanupListeners: null,
 
     /**
      * Inicializa y precarga las dependencias externas (PDF.js / Html5Qrcode)
@@ -44,6 +45,8 @@ export const QRPDFImporter = {
                         if (window.pdfjsLib) {
                             window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_CDN;
                             console.log("[Chuya::QRPDF] PDF.js cargado exitosamente.");
+                        } else {
+                            huboError = true;
                         }
                         res();
                     };
@@ -62,7 +65,11 @@ export const QRPDFImporter = {
                     const scriptQr = document.createElement("script");
                     scriptQr.src = HTML5_QRCODE_CDN;
                     scriptQr.onload = () => {
-                        console.log("[Chuya::QRPDF] Html5Qrcode cargado exitosamente.");
+                        if (window.Html5Qrcode) {
+                            console.log("[Chuya::QRPDF] Html5Qrcode cargado exitosamente.");
+                        } else {
+                            huboError = true;
+                        }
                         res();
                     };
                     scriptQr.onerror = () => {
@@ -75,11 +82,11 @@ export const QRPDFImporter = {
             }
 
             Promise.all(promesas).then(() => {
-                // Permitir reintentar la carga más adelante si falló por estar offline
-                if (huboError) {
+                const listo = Boolean(window.pdfjsLib && window.Html5Qrcode);
+                if (huboError || !listo) {
                     this._loadingPromise = null;
                 }
-                resolve(Boolean(window.pdfjsLib && window.Html5Qrcode));
+                resolve(listo);
             });
         });
 
@@ -89,12 +96,20 @@ export const QRPDFImporter = {
     /**
      * Lee un archivo PDF de credencial Chuya/Ave-Libre y extrae Miembro, Dirección Nano y Fingerprint PGP
      * @param {File} file
-     * @returns {Promise<Object>}
+     * @returns {Promise<{nombre: string, nanoAddress: string, pgpFingerprint: string}>}
      */
     async procesarPDF(file) {
         if (!file) throw new Error("No se proporcionó ningún archivo PDF.");
-        console.log("[Chuya::QRPDF] Procesando archivo PDF de identidad:", file.name);
 
+        const esPDFValido =
+            file.type === "application/pdf" ||
+            file.name.toLowerCase().endsWith(".pdf");
+
+        if (!esPDFValido) {
+            throw new Error("El archivo seleccionado no es un documento PDF válido.");
+        }
+
+        console.log("[Chuya::QRPDF] Procesando archivo PDF de identidad:", file.name);
         await this.cargarLibrerias();
 
         if (!window.pdfjsLib) {
@@ -115,10 +130,22 @@ export const QRPDFImporter = {
 
             console.log("[Chuya::QRPDF] Texto extraído del PDF:", textoCompleto);
 
-            // 1. Extraer Miembro (Nombre)
+            // 0. Detectar si el usuario subió por error un Comprobante de Pago POS
+            const esComprobantePOS =
+                /COMPROBANTE DE PAGO\s*&\s*PROMOCI[ÓO]N/i.test(textoCompleto) ||
+                /Hash:\s*CUS-/i.test(textoCompleto);
+
+            if (esComprobantePOS) {
+                console.warn("[Chuya::QRPDF] Documento rechazado: corresponde a un Comprobante POS, no a una Tarjeta QR.");
+                throw new Error(
+                    "Subiste un Comprobante de Pago POS. Para iniciar sesión debes cargar tu 'Tarjeta QR de Miembro'."
+                );
+            }
+
+            // 1. Extraer Nombre del Miembro (compatible con nomenclatura Ave-Libre y Chuya)
             const matchMiembro =
-                textoCompleto.match(/Miembro:\s*([^\n\r\t]+?)(?=\s*(Direcci|Identidad|PGP|Fingerprint|☐|$))/i) ||
-                textoCompleto.match(/Miembro:\s*([a-zA-Z0-9_\-\s]+)/i);
+                textoCompleto.match(/(?:Miembro|Usuario|Cliente)\s*:\s*([^\n\r\t]+?)(?=\s*(?:Direcci|Identidad|PGP|Fingerprint|☐|$))/i) ||
+                textoCompleto.match(/(?:Miembro|Usuario|Cliente)\s*:\s*([a-zA-Z0-9À-ÿ_\-\s]+)/i);
 
             // 2. Extraer Dirección Nano tolerando saltos de línea y espacios intermedios en el PDF
             let nanoAddressExtraida = "";
@@ -139,7 +166,7 @@ export const QRPDFImporter = {
 
             // 3. Extraer Huella PGP Fingerprint (40 caracteres hexadecimales)
             const matchPGP =
-                textoCompleto.match(/(?:PGP Fingerprint:\s*|Fingerprint:\s*)([A-Fa-f0-9\s]{40,55})/i) ||
+                textoCompleto.match(/(?:PGP\s*Fingerprint\s*:\s*|Fingerprint\s*:\s*)([A-Fa-f0-9\s]{40,55})/i) ||
                 textoCompleto.match(/([A-Fa-f0-9]{40})/);
 
             const pgpLimpia = matchPGP
@@ -187,6 +214,8 @@ export const QRPDFImporter = {
 
         const html5QrCode = new window.Html5Qrcode(elementId);
         this._activeScanner = html5QrCode;
+        this._registrarAutoLimpieza();
+
         const config = { fps: 10, qrbox: { width: 240, height: 240 } };
 
         try {
@@ -207,8 +236,42 @@ export const QRPDFImporter = {
             );
         } catch (err) {
             console.error("[Chuya::QRPDF] Error al acceder a la cámara del dispositivo:", err.message);
-            this._activeScanner = null;
+            await this.detenerEscanerQR();
             alert("⚠️ No se pudo acceder a la cámara. Verifica los permisos del navegador.");
+        }
+    },
+
+    /**
+     * Registra listeners de ciclo de vida para apagar la cámara si el usuario cambia de vista u oculta la pestaña
+     * @private
+     */
+    _registrarAutoLimpieza() {
+        this._removerAutoLimpieza();
+
+        const onRouteOrHide = () => {
+            if (document.hidden || this._activeScanner) {
+                console.log("[Chuya::QRPDF] Cambio de vista o visibilidad detectado; liberando cámara...");
+                this.detenerEscanerQR();
+            }
+        };
+
+        window.addEventListener("hashchange", onRouteOrHide);
+        document.addEventListener("visibilitychange", onRouteOrHide);
+
+        this._cleanupListeners = () => {
+            window.removeEventListener("hashchange", onRouteOrHide);
+            document.removeEventListener("visibilitychange", onRouteOrHide);
+        };
+    },
+
+    /**
+     * Elimina los listeners temporales de auto-limpieza
+     * @private
+     */
+    _removerAutoLimpieza() {
+        if (typeof this._cleanupListeners === "function") {
+            this._cleanupListeners();
+            this._cleanupListeners = null;
         }
     },
 
@@ -216,6 +279,8 @@ export const QRPDFImporter = {
      * Detiene y libera limpiamente la cámara WebRTC si existe un escáner activo
      */
     async detenerEscanerQR() {
+        this._removerAutoLimpieza();
+
         if (!this._activeScanner) return;
 
         const scanner = this._activeScanner;
