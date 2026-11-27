@@ -1,15 +1,77 @@
 {
-  "name": "Granja Circular - Huevos & Pollo",
-  "short_name": "GranjaCircular",
+  "id": "./index.html",
+  "name": "Chuya | Tienda & Economía Circular",
+  "short_name": "Chuya",
+  "description": "PWA Chuya - Economía circular, pedidos locales frescos y recompensas Nano (XNO).",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4CAF50",
+  "orientation": "portrait",
+  "background_color": "#f4f7f4",
+  "theme_color": "#10b981",
+  "lang": "es-CO",
+  "dir": "ltr",
+  "categories": [
+    "shopping",
+    "food",
+    "lifestyle"
+  ],
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "../assets/icons/favicon.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ver Catálogo",
+      "short_name": "Catálogo",
+      "url": "./index.html#catalogo",
+      "icons": [
+        {
+          "src": "../assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Gana Nano (XNO)",
+      "short_name": "Reciclar",
+      "url": "./index.html#gana-xno",
+      "icons": [
+        {
+          "src": "../assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

@@ -1,24 +1,27 @@
 /**
  * Chuya - Módulo Gana Nano & Economía Circular
- * Refactorizado para sincronización optimizada con Google Sheets (Code.gs) y Local-First PWA.
- * Adaptativo para entorno de desarrollo (Refresco Manual) y producción (Refresco Inteligente/Recursivo en GitHub Pages).
+ * Ubicación: chuya-pwa/clientes/js/modules/gana-nano.js
+ * Sincronizado con Google Sheets (Code.gs) y Local-First PWA.
+ * Adaptativo para desarrollo (Refresco Manual) y producción (Refresco Inteligente).
  * Stack: JS Vanilla ES6+
  */
 
 import { CONFIG } from "../config.js";
 import { NanoWallet } from "./nano-wallet.js";
 
-// Dirección ficticia de prueba para desarrollo/demo cuando no hay wallet vinculada
+// Dirección ficticia de prueba EXCLUSIVA para entornos locales de desarrollo
 const FICTITIOUS_TEST_NANO_ADDRESS = "nano_3test1111111111111111111111111111111111111111111111111111111";
+const RUTAS_VISTA_METAS = ["#gana-xno", "#cascaras"];
 
 export const GanaNanoView = {
     pollingInterval: null,
-    // Intervalo amplio de 90 segundos para producción en GitHub Pages (evita cuotas de Google Apps Script)
-    PROD_POLLING_DELAY_MS: 90000, 
+    // Intervalo amplio de 90 segundos para producción (protege cuotas de Google Apps Script)
+    PROD_POLLING_DELAY_MS: 90000,
     cargando: false,
 
     /**
      * Detecta si la aplicación se ejecuta en un entorno local de desarrollo
+     * @returns {boolean}
      */
     esEntornoDesarrollo() {
         const host = window.location.hostname;
@@ -26,24 +29,33 @@ export const GanaNanoView = {
     },
 
     /**
+     * Verifica si la vista de Gana Nano sigue montada en el enrutador SPA
+     * @returns {boolean}
+     */
+    _estaEnVistaMetas() {
+        const hashActual = (window.location.hash || "").toLowerCase();
+        return RUTAS_VISTA_METAS.includes(hashActual) && Boolean(document.getElementById("cascaras"));
+    },
+
+    /**
      * Inicializa la vista de metas de economía circular
      */
     async init() {
         const esDev = this.esEntornoDesarrollo();
-        console.log(`[AveLibre::GanaNano] Inicializando vista de metas (${esDev ? "Entorno DESARROLLO" : "Entorno PRODUCCIÓN (GitHub Pages)"})...`);
-        
+        console.log(`[Chuya::GanaNano] Inicializando vista de metas (${esDev ? "Entorno DESARROLLO" : "Entorno PRODUCCIÓN"})...`);
+
         this.cacheDOM();
         this.bindEvents();
-        
-        // 1. Carga inicial de datos
+
+        // 1. Carga inicial de datos (Local-First + Red)
         await this.cargarProgresoUsuario();
 
-        // 2. Configuración de estrategia de refresco según el entorno
+        // 2. Estrategia de refresco según entorno
         if (esDev) {
-            console.log("[AveLibre::GanaNano] Modo Desarrollo: Refresco automático desactivado. Utiliza el botón manual de actualización.");
+            console.log("[Chuya::GanaNano] Modo Desarrollo: Refresco automático desactivado. Usa el botón manual de actualización.");
             this.detenerSincronizacion();
         } else {
-            console.log("[AveLibre::GanaNano] Modo Producción: Activando sincronización pasiva e inteligente...");
+            console.log("[Chuya::GanaNano] Modo Producción: Activando sincronización pasiva e inteligente...");
             this.iniciarSincronizacionInteligente();
         }
     },
@@ -77,11 +89,11 @@ export const GanaNanoView = {
             this.btnRefrescar.addEventListener("click", this._onRefrescarClick);
         }
 
-        // Evento de visibilidad para producción: Refresca solo al regresar a la pestaña activa
+        // Evento de visibilidad para producción: refresca solo al regresar a la pestaña activa
         if (!this._visibilityListenerBound && !this.esEntornoDesarrollo()) {
             document.addEventListener("visibilitychange", () => {
-                if (document.visibilityState === "visible" && window.location.hash === "#gana-xno") {
-                    console.log("[AveLibre::GanaNano] Pestaña reactivada. Sincronizando datos con Google Sheets...");
+                if (document.visibilityState === "visible" && this._estaEnVistaMetas()) {
+                    console.log("[Chuya::GanaNano] Pestaña reactivada en vista de metas. Sincronizando...");
                     this.cargarProgresoUsuario();
                 }
             });
@@ -90,7 +102,8 @@ export const GanaNanoView = {
     },
 
     /**
-     * Obtiene la dirección Nano real o asigna la dirección ficticia de prueba
+     * Obtiene la dirección Nano real o asigna la wallet ficticia únicamente en desarrollo local
+     * @returns {string|null}
      */
     obtenerNanoAddress() {
         let address = null;
@@ -101,16 +114,17 @@ export const GanaNanoView = {
         }
 
         if (!address) {
-            address = localStorage.getItem(CONFIG.STORAGE_KEYS?.NANO_ADDRESS || "nano_address") || 
-                      localStorage.getItem("avelibre_nano_wallet");
+            address = localStorage.getItem(CONFIG.STORAGE_KEYS?.NANO_ADDRESS || "chuya_nano_address")
+                || localStorage.getItem("nano_address")
+                || localStorage.getItem("avelibre_nano_wallet");
         }
 
-        if (!address) {
-            console.warn(`[AveLibre::GanaNano] Sin wallet vinculada. Utilizando dirección ficticia para pruebas: ${FICTITIOUS_TEST_NANO_ADDRESS}`);
+        if (!address && this.esEntornoDesarrollo()) {
+            console.warn(`[Chuya::GanaNano] Sin wallet vinculada en desarrollo. Usando dirección de prueba: ${FICTITIOUS_TEST_NANO_ADDRESS}`);
             address = FICTITIOUS_TEST_NANO_ADDRESS;
         }
 
-        return address;
+        return address || null;
     },
 
     /**
@@ -122,8 +136,9 @@ export const GanaNanoView = {
         this.cargando = true;
         this.setEstadoBotonRefrescar(true);
 
-        console.log(`[AveLibre::GanaNano] Consultando progreso de metas (${esManual ? "Solicitud Manual" : "Sincronización Automática"})...`);
+        console.log(`[Chuya::GanaNano] Consultando progreso de metas (${esManual ? "Solicitud Manual" : "Sincronización Automática"})...`);
 
+        const metasKey = CONFIG.STORAGE_KEYS?.USER_METAS || "chuya_user_metas";
         const defaultData = {
             cascaras: { actual: 0, max: 30 },
             aserrin: { actual: 0, max: 3 },
@@ -131,30 +146,54 @@ export const GanaNanoView = {
             descuentoXNO: 0
         };
 
-        // 1. Cargar datos inmediatos desde LocalStorage (Local-First)
+        // 1. Cargar datos inmediatos desde LocalStorage (Local-First + migración legacy)
         let userData = defaultData;
         try {
-            const localRaw = localStorage.getItem("avelibre_user_metas");
+            const localRaw = localStorage.getItem(metasKey) || localStorage.getItem("avelibre_user_metas");
             if (localRaw) {
-                userData = JSON.parse(localRaw);
+                const parsed = JSON.parse(localRaw);
+                userData = {
+                    cascaras: { ...defaultData.cascaras, ...(parsed.cascaras || {}) },
+                    aserrin: { ...defaultData.aserrin, ...(parsed.aserrin || {}) },
+                    descuentoCOP: Number(parsed.descuentoCOP) || 0,
+                    descuentoXNO: Number(parsed.descuentoXNO) || 0
+                };
+                localStorage.setItem(metasKey, JSON.stringify(userData));
             }
         } catch (e) {
-            console.warn("[AveLibre::GanaNano] Error al leer LocalStorage:", e.message);
+            console.warn("[Chuya::GanaNano] Error al leer LocalStorage, usando valores base:", e.message);
         }
 
         this.renderMetas(userData);
 
-        // 2. Consulta al backend en Google Sheets
+        // 2. Validar wallet vinculada antes de consultar Google Sheets
         const nanoAddress = this.obtenerNanoAddress();
+        if (!nanoAddress) {
+            console.warn("[Chuya::GanaNano] Sin dirección Nano vinculada en producción.");
+            if (this.recompensaTexto) {
+                this.recompensaTexto.innerHTML = `⚠️ <strong>Vincula tu Billetera Nano</strong> en tu perfil para consultar tus entregas de cáscaras y aserrín acumuladas.`;
+            }
+            this.cargando = false;
+            this.setEstadoBotonRefrescar(false);
+            return;
+        }
 
-        if (nanoAddress && navigator.onLine) {
-            console.log(`[AveLibre::GanaNano] 🔄 Petición HTTP GET a Google Sheets para wallet: ${nanoAddress}`);
+        // 3. Consulta al backend en Google Sheets
+        if (navigator.onLine) {
+            console.log(`[Chuya::GanaNano] 🔄 Petición HTTP GET a Google Sheets para wallet: ${nanoAddress}`);
             try {
                 const url = `${CONFIG.API_URL}?action=getUser&nanoAddress=${encodeURIComponent(nanoAddress)}`;
-                const res = await fetch(url, { method: "GET", redirect: "follow" });
+                const res = await fetch(url, {
+                    method: "GET",
+                    mode: "cors",
+                    credentials: "omit",
+                    redirect: "follow"
+                });
 
                 if (res.ok) {
-                    const result = await res.json();
+                    const rawText = await res.text();
+                    const result = JSON.parse(rawText);
+
                     if (result.status === "success" && result.data) {
                         const cascarasAcum = Number(result.data.cascarasAcumuladas) || 0;
                         const aserrinAcum = Number(result.data.aserrinAcumulado) || 0;
@@ -166,24 +205,26 @@ export const GanaNanoView = {
                         userData = {
                             cascaras: { actual: cascarasAcum, max: 30 },
                             aserrin: { actual: aserrinAcum, max: 3 },
-                            descuentoCOP: descuentoCOP,
-                            descuentoXNO: descuentoXNO
+                            descuentoCOP,
+                            descuentoXNO
                         };
 
-                        localStorage.setItem("avelibre_user_metas", JSON.stringify(userData));
-                        console.log("[AveLibre::GanaNano] ✅ Sincronización exitosa desde Google Sheets:", userData);
+                        localStorage.setItem(metasKey, JSON.stringify(userData));
+                        console.log("[Chuya::GanaNano] ✅ Sincronización exitosa desde Google Sheets:", userData);
                         this.renderMetas(userData);
                     } else if (result.status === "notFound") {
-                        console.log("[AveLibre::GanaNano] Usuario aún no registrado en Google Sheets. Conservando caché local.");
+                        console.log("[Chuya::GanaNano] Usuario aún no registrado en Google Sheets. Conservando caché local.");
+                    } else {
+                        console.warn("[Chuya::GanaNano] Respuesta inesperada del servidor:", result.message);
                     }
                 } else {
-                    console.warn(`[AveLibre::GanaNano] Respuesta de red no óptima (HTTP ${res.status}).`);
+                    console.warn(`[Chuya::GanaNano] Respuesta de red no óptima (HTTP ${res.status}).`);
                 }
             } catch (error) {
-                console.warn("[AveLibre::GanaNano] Fallo de conexión de red. Conservando caché local:", error.message);
+                console.warn("[Chuya::GanaNano] Fallo de conexión o parseo. Conservando caché local:", error.message);
             }
         } else {
-            console.warn("[AveLibre::GanaNano] Dispositivo offline. Mostrando datos de LocalStorage.");
+            console.warn("[Chuya::GanaNano] Dispositivo offline. Mostrando datos de LocalStorage.");
         }
 
         this.cargando = false;
@@ -191,14 +232,17 @@ export const GanaNanoView = {
     },
 
     /**
-     * Activa un temporizador de actualización pasivo para producción
+     * Activa un temporizador de actualización pasivo para producción (auto-limpiable en SPA)
      */
     iniciarSincronizacionInteligente() {
         this.detenerSincronizacion();
-        console.log(`[AveLibre::GanaNano] Refresco en producción configurado a cada ${this.PROD_POLLING_DELAY_MS / 1000}s (solo con pestaña activa).`);
-        
+        console.log(`[Chuya::GanaNano] Refresco en producción configurado cada ${this.PROD_POLLING_DELAY_MS / 1000}s.`);
+
         this.pollingInterval = setInterval(() => {
-            // Unicamente refrescar si la pestaña está visible y hay conexión a red
+            if (!this._estaEnVistaMetas()) {
+                this.detenerSincronizacion();
+                return;
+            }
             if (document.visibilityState === "visible" && navigator.onLine) {
                 this.cargarProgresoUsuario();
             }
@@ -212,12 +256,13 @@ export const GanaNanoView = {
         if (this.pollingInterval) {
             clearInterval(this.pollingInterval);
             this.pollingInterval = null;
-            console.log("[AveLibre::GanaNano] Sincronización automática detenida.");
+            console.log("[Chuya::GanaNano] Sincronización automática detenida.");
         }
     },
 
     /**
      * Controla el estado visual y de interacción del botón de refresco manual
+     * @param {boolean} cargando
      */
     setEstadoBotonRefrescar(cargando) {
         if (!this.btnRefrescar) return;
@@ -233,6 +278,7 @@ export const GanaNanoView = {
 
     /**
      * Renderiza las barras de progreso y el resumen de recompensas en el DOM
+     * @param {Object} data
      */
     renderMetas(data) {
         if (!this.cascarasProgress || !document.body.contains(this.cascarasProgress)) {
@@ -251,18 +297,29 @@ export const GanaNanoView = {
             this.aserrinNum.textContent = `${data.aserrin.actual} / ${data.aserrin.max} Bultos`;
         }
 
+        const tieneDescuento = (Number(data.descuentoCOP) > 0 || Number(data.descuentoXNO) > 0);
+
         if (this.recompensaTexto) {
-            if (data.descuentoCOP > 0 || data.descuentoXNO > 0) {
-                this.recompensaTexto.innerHTML = `🎉 <strong>¡Felicidades!</strong> Tienes <strong>${data.descuentoXNO} XNO</strong> ($${data.descuentoCOP} COP) acumulados por tus aportes de economía circular.`;
+            if (tieneDescuento) {
+                this.recompensaTexto.innerHTML = `🎉 <strong>¡Felicidades!</strong> Tienes <strong>${data.descuentoXNO} XNO</strong> ($${Number(data.descuentoCOP).toLocaleString("es-CO")} COP) acumulados por tus aportes de economía circular.`;
             } else {
                 this.recompensaTexto.innerHTML = `Entrega tus cáscaras de huevo y bultos de aserrín para acumular descuentos en tus pedidos.`;
             }
         }
+
+        if (this.btnRedimir) {
+            this.btnRedimir.disabled = !tieneDescuento;
+            this.btnRedimir.classList.toggle("disabled", !tieneDescuento);
+        }
     },
 
     handleRedimirDescuento() {
-        console.log("[AveLibre::GanaNano] Aplicando descuento acumulado...");
-        localStorage.setItem("avelibre_descuento_aplicado", "true");
+        const discountKey = CONFIG.STORAGE_KEYS?.DISCOUNT_APPLIED || "chuya_descuento_aplicado";
+        console.log("[Chuya::GanaNano] Aplicando descuento acumulado al pedido...");
+        localStorage.setItem(discountKey, "true");
+        localStorage.setItem("avelibre_descuento_aplicado", "true"); // Compatibilidad temporal
+
+        this.detenerSincronizacion();
         if (window.Router) {
             window.Router.navigate("#catalogo");
         } else {
@@ -271,4 +328,6 @@ export const GanaNanoView = {
     }
 };
 
-window.GanaNanoView = GanaNanoView;
+if (typeof window !== "undefined") {
+    window.GanaNanoView = GanaNanoView;
+}
