@@ -2,6 +2,10 @@
 
 **Chuya** (vocablo de origen indígena colombiano que evoca *frescura, limpieza y transparencia*) es una **Progressive Web App (PWA) Local-First** diseñada bajo una estética **Solarpunk** para conectar productores avícolas campesinos y hogares en **Miranda, Cauca (Colombia)** mediante economía circular, trazabilidad criptográfica y pagos/recompensas sin comisiones con **Nano (XNO)**.
 
+Direcciones:
+   cliente: https://kamina2025.github.io/chuya-pwa/clientes/index.html#inicio
+   admin: https://kamina2025.github.io/chuya-pwa/admin-recolector/index.html#inicio
+
 ---
 
 ## 📋 Tabla de Contenidos
